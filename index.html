@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>懂车帝全景内饰跳转器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: #a0a0a0;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .hot-section {
+            margin-top: 20px;
+        }
+
+        .hot-title {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 15px;
+        }
+
+        .hot-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .hot-tag {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .hot-tag:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .hot-tag.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .result-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .car-info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .car-image {
+            width: 120px;
+            height: 80px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .car-details {
+            flex: 1;
+        }
+
+        .car-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .car-series {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-interior {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+
+        .btn-exterior {
+            background: linear-gradient(135deg, #48dbfb 0%, #0abde3 100%);
+            color: white;
+        }
+
+        .btn-params {
+            background: linear-gradient(135deg, #feca57 0%, #f39c12 100%);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .manual-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .manual-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .manual-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .form-input {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+        }
+
+        .manual-btn {
+            padding: 12px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .history-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .history-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clear-btn {
+            padding: 5px 10px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: #e9ecef;
+        }
+
+        .history-name {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .history-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .tips-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+        }
+
+        .tips-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .tips-content {
+            font-size: 14px;
+            line-height: 1.8;
+            opacity: 0.9;
+        }
+
+        .tips-content li {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .car-info {
+                flex-direction: column;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1>🚗 懂车帝全景内饰跳转器</h1>
+            <p>输入车型，一键查看全景内饰</p>
+        </div>
+
+        <!-- 搜索区域 -->
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="输入车型名称，如：小米SU7、Model 3、秦PLUS...">
+                <button class="search-btn" onclick="searchCar()">🔍 搜索</button>
+            </div>
+
+            <div class="hot-section">
+                <div class="hot-title">🔥 热门车型：</div>
+                <div class="hot-tags">
+                    <button class="hot-tag" onclick="selectHotCar('小米SU7', '6187')">小米SU7</button>
+                    <button class="hot-tag" onclick="selectHotCar('特斯拉Model 3', '3762')">Model 3</button>
+                    <button class="hot-tag" onclick="selectHotCar('比亚迪秦PLUS', '4802')">秦PLUS</button>
+                    <button class="hot-tag" onclick="selectHotCar('问界M7', '5820')">问界M7</button>
+                    <button class="hot-tag" onclick="selectHotCar('理想L7', '6173')">理想L7</button>
+                    <button class="hot-tag" onclick="selectHotCar('蔚来ET5', '5409')">蔚来ET5</button>
+                    <button class="hot-tag" onclick="selectHotCar('小鹏P7', '4156')">小鹏P7</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 搜索结果 -->
+        <div class="result-section" id="resultSection">
+            <div class="result-title">📋 搜索结果</div>
+            <div class="car-info">
+                <div class="car-image" id="carEmoji">🚗</div>
+                <div class="car-details">
+                    <div class="car-name" id="carName">-</div>
+                    <div class="car-series" id="carSeries">系列ID: -</div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn btn-interior" onclick="goToInterior()">🏠 查看全景内饰</button>
+                <button class="action-btn btn-exterior" onclick="goToExterior()">🚙 查看外观</button>
+                <button class="action-btn btn-params" onclick="goToParams()">📊 查看参数配置</button>
+            </div>
+        </div>
+
+        <!-- 手动输入 -->
+        <div class="manual-section">
+            <div class="manual-title">🔧 手动输入（高级模式）</div>
+            <div class="manual-form">
+                <div class="form-group">
+                    <label class="form-label">车型名称：</label>
+                    <input type="text" class="form-input" id="manualName" placeholder="如：小米SU7">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">系列ID（Series ID）：</label>
+                    <input type="text" class="form-input" id="manualId" placeholder="如：6228（在懂车帝URL中查找）">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">配置ID（Car ID，可选）：</label>
+                    <input type="text" class="form-input" id="manualCarId" placeholder="如：76134（可留空，使用默认配置）">
+                </div>
+                <button class="manual-btn" onclick="manualJump()">🚀 直接跳转全景内饰</button>
+            </div>
+        </div>
+
+        <!-- 历史记录 -->
+        <div class="history-section" id="historySection">
+            <div class="history-title">
+                <span>📝 历史记录</span>
+                <button class="clear-btn" onclick="clearHistory()">清空</button>
+            </div>
+            <div class="history-list" id="historyList">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="tips-section">
+            <div class="tips-title">💡 使用说明</div>
+            <div class="tips-content">
+                <ul>
+                    <li><strong>快速使用：</strong>点击热门车型标签，一键跳转到全景内饰</li>
+                    <li><strong>搜索功能：</strong>输入车型名称，自动匹配</li>
+                    <li><strong>手动模式：</strong>如果知道系列ID，可直接输入跳转</li>
+                    <li><strong>配置ID（可选）：</strong>指定具体的车型配置，留空则使用默认配置</li>
+                    <li><strong>如何获取ID：</strong>
+                        <ol>
+                            <li>打开懂车帝App或网站，搜索车型</li>
+                            <li>进入车型的全景内饰页面</li>
+                            <li>分享链接中可以看到 <strong>series_id</strong> 和 <strong>selected_car_id</strong></li>
+                            <li>例如：series_id=<strong>4156</strong>&selected_car_id=<strong>76134</strong></li>
+                        </ol>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 车型数据库（常见车型）
+        // selected_car_id 是具体配置ID，如果不知道可以留空，全景页面会使用默认配置
+        const carDatabase = {
+            '小米SU7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155' },
+            'su7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155' },
+            '特斯拉Model 3': { id: '3762', brand: '特斯拉', emoji: '⚡', carId: '' },
+            'model3': { id: '3762', brand: '特斯拉', emoji: '⚡', carId: '' },
+            'model 3': { id: '3762', brand: '特斯拉', emoji: '⚡', carId: '' },
+            '比亚迪秦PLUS': { id: '4802', brand: '比亚迪', emoji: '🔋', carId: '' },
+            '秦plus': { id: '4802', brand: '比亚迪', emoji: '🔋', carId: '' },
+            '问界M7': { id: '5820', brand: '问界', emoji: '🚀', carId: '' },
+            '理想L7': { id: '6173', brand: '理想汽车', emoji: '🛋️', carId: '' },
+            '蔚来ET5': { id: '5409', brand: '蔚来', emoji: '🔵', carId: '' },
+            '小鹏P7': { id: '4156', brand: '小鹏汽车', emoji: '🤖', carId: '76134' },
+        };
+
+        // 当前选中的车型
+        let currentCar = null;
+
+        // 历史记录
+        let history = JSON.parse(localStorage.getItem('carHistory') || '[]');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderHistory();
+            setupEnterKey();
+        });
+
+        // 设置回车键搜索
+        function setupEnterKey() {
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchCar();
+                }
+            });
+        }
+
+        // 搜索车型
+        function searchCar() {
+            const input = document.getElementById('searchInput').value.trim();
+
+            if (!input) {
+                alert('请输入车型名称');
+                return;
+            }
+
+            // 模糊匹配
+            const result = findCar(input);
+
+            if (result) {
+                showResult(result.name, result.data);
+            } else {
+                // 未找到，提示用户手动输入
+                if (confirm(`未找到"${input}"的匹配结果。\n\n是否跳转到懂车帝搜索页面？`)) {
+                    const searchUrl = `https://www.dongchedi.com/search?keyword=${encodeURIComponent(input)}`;
+                    window.open(searchUrl, '_blank');
+                    addToHistory(input, '搜索');
+                }
+            }
+        }
+
+        // 查找车型
+        function findCar(keyword) {
+            keyword = keyword.toLowerCase();
+
+            // 精确匹配
+            for (const [name, data] of Object.entries(carDatabase)) {
+                if (name.toLowerCase() === keyword) {
+                    return { name, data };
+                }
+            }
+
+            // 模糊匹配
+            for (const [name, data] of Object.entries(carDatabase)) {
+                if (name.toLowerCase().includes(keyword) || keyword.includes(name.toLowerCase())) {
+                    return { name, data };
+                }
+            }
+
+            // 品牌匹配
+            for (const [name, data] of Object.entries(carDatabase)) {
+                if (data.brand.toLowerCase().includes(keyword) || keyword.includes(data.brand.toLowerCase())) {
+                    return { name, data };
+                }
+            }
+
+            return null;
+        }
+
+        // 显示结果
+        function showResult(name, data) {
+            currentCar = { name, ...data };
+
+            document.getElementById('carEmoji').textContent = data.emoji;
+            document.getElementById('carName').textContent = name;
+            document.getElementById('carSeries').textContent = `品牌: ${data.brand} | 系列ID: ${data.id}`;
+
+            document.getElementById('resultSection').classList.add('show');
+
+            // 添加到历史
+            addToHistory(name, data.id);
+        }
+
+        // 选择热门车型
+        function selectHotCar(name, id) {
+            const data = carDatabase[name.toLowerCase()] || carDatabase[name];
+            if (data) {
+                showResult(name, data);
+                document.getElementById('searchInput').value = name;
+            }
+        }
+
+        // 构建全景内饰URL
+        function buildInteriorUrl(seriesId, carId) {
+            let url = `https://m.dcdapp.com/motor/inapp/pano-new/inner.html?series_id=${seriesId}&selected_color=%23000000&selected_sub_color=`;
+            if (carId) {
+                url += `&selected_car_id=${carId}`;
+            }
+            return url;
+        }
+
+        // 跳转到全景内饰
+        function goToInterior() {
+            if (!currentCar) {
+                alert('请先选择车型');
+                return;
+            }
+
+            const url = buildInteriorUrl(currentCar.id, currentCar.carId || '');
+            window.open(url, '_blank');
+        }
+
+        // 跳转到外观
+        function goToExterior() {
+            if (!currentCar) {
+                alert('请先选择车型');
+                return;
+            }
+
+            const url = `https://www.dongchedi.com/auto/series/${currentCar.id}`;
+            window.open(url, '_blank');
+        }
+
+        // 跳转到参数配置
+        function goToParams() {
+            if (!currentCar) {
+                alert('请先选择车型');
+                return;
+            }
+
+            const url = `https://www.dongchedi.com/auto/params-carIds-x-${currentCar.id}`;
+            window.open(url, '_blank');
+        }
+
+        // 手动跳转
+        function manualJump() {
+            const name = document.getElementById('manualName').value.trim();
+            const id = document.getElementById('manualId').value.trim();
+            const carId = document.getElementById('manualCarId').value.trim();
+
+            if (!id) {
+                alert('请输入系列ID');
+                return;
+            }
+
+            const url = buildInteriorUrl(id, carId);
+            window.open(url, '_blank');
+
+            if (name) {
+                addToHistory(name, id);
+            }
+        }
+
+        // 添加到历史记录
+        function addToHistory(name, seriesId) {
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+            // 避免重复
+            history = history.filter(item => item.name !== name);
+
+            // 添加到开头
+            history.unshift({
+                name,
+                seriesId,
+                time: timeStr
+            });
+
+            // 只保留最近10条
+            if (history.length > 10) {
+                history = history.slice(0, 10);
+            }
+
+            // 保存到本地存储
+            localStorage.setItem('carHistory', JSON.stringify(history));
+
+            // 重新渲染
+            renderHistory();
+        }
+
+        // 渲染历史记录
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+            const historySection = document.getElementById('historySection');
+
+            if (history.length === 0) {
+                historySection.style.display = 'none';
+                return;
+            }
+
+            historySection.style.display = 'block';
+            historyList.innerHTML = '';
+
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.onclick = () => {
+                    document.getElementById('searchInput').value = item.name;
+                    if (item.seriesId !== '搜索') {
+                        const data = carDatabase[item.name.toLowerCase()] || carDatabase[item.name];
+                        if (data) {
+                            showResult(item.name, data);
+                        } else {
+                            document.getElementById('manualName').value = item.name;
+                            document.getElementById('manualId').value = item.seriesId;
+                        }
+                    } else {
+                        searchCar();
+                    }
+                };
+                div.innerHTML = `
+                    <span class="history-name">${item.name}</span>
+                    <span class="history-time">${item.time}</span>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        // 清空历史记录
+        function clearHistory() {
+            if (confirm('确定要清空历史记录吗？')) {
+                history = [];
+                localStorage.removeItem('carHistory');
+                renderHistory();
+            }
+        }
+    </script>
+</body>
+</html>
