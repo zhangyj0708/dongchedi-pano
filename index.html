@@ -450,6 +450,23 @@
             </div>
         </div>
 
+        <!-- 批量导入 -->
+        <div class="manual-section" style="background: linear-gradient(135deg, #f0fff0, #e8ffe8); border: 2px solid #27ae60;">
+            <div class="manual-title">📦 批量导入车型（一次性导入多个）</div>
+            <div class="manual-form">
+                <div class="form-group">
+                    <label class="form-label">粘贴多个懂车帝全景内饰链接（每行一个）：</label>
+                    <textarea id="batchUrls" class="form-input" rows="6" placeholder="每行粘贴一个链接，例如：&#10;https://m.dcdapp.com/motor/inapp/pano-new/inner.html?series_id=4538&#10;https://m.dcdapp.com/motor/inapp/pano-new/inner.html?series_id=212&#10;..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">对应的车型名称（每行一个，与上面链接一一对应）：</label>
+                    <textarea id="batchNames" class="form-input" rows="6" placeholder="每行一个车型名，例如：&#10;宝马3系&#10;奔驰C级&#10;..."></textarea>
+                </div>
+                <button class="manual-btn" onclick="batchImport()" style="background: linear-gradient(135deg, #27ae60, #2ecc71); font-size: 16px; padding: 15px;">📦 批量导入并保存</button>
+                <div id="batchResult" style="margin-top: 15px; font-size: 14px; color: #333; display: none;"></div>
+            </div>
+        </div>
+
         <!-- 手动输入 -->
         <div class="manual-section">
             <div class="manual-title">🔧 手动输入ID</div>
@@ -759,6 +776,23 @@
             window.open(url, '_blank');
         }
 
+        // 从URL中提取 series_id 和 car_id
+        function extractIdsFromUrl(url) {
+            let seriesId = '';
+            let carId = '';
+
+            const seriesMatch = url.match(/series_id[=:]\s*(\d+)/i)
+                || url.match(/series[=/]\s*(\d+)/i)
+                || url.match(/auto\/series\/(\d+)/i);
+            if (seriesMatch) seriesId = seriesMatch[1];
+
+            const carMatch = url.match(/selected_car_id[=:]\s*(\d+)/i)
+                || url.match(/car_id[=:]\s*(\d+)/i);
+            if (carMatch) carId = carMatch[1];
+
+            return { seriesId, carId };
+        }
+
         // 从粘贴的链接中提取 series_id 和 car_id 并跳转
         function extractAndJump() {
             const pasted = document.getElementById('pasteUrl').value.trim();
@@ -768,34 +802,20 @@
                 return;
             }
 
-            // 尝试从URL中提取 series_id
-            let seriesId = '';
-            let carId = '';
-
-            // 匹配 series_id=数字
-            const seriesMatch = pasted.match(/series_id[=:]\s*(\d+)/i)
-                || pasted.match(/series[=/]\s*(\d+)/i)
-                || pasted.match(/auto\/series\/(\d+)/i);
-            if (seriesMatch) {
-                seriesId = seriesMatch[1];
-            }
-
-            // 匹配 selected_car_id=数字 或 car_id=数字
-            const carMatch = pasted.match(/selected_car_id[=:]\s*(\d+)/i)
-                || pasted.match(/car_id[=:]\s*(\d+)/i);
-            if (carMatch) {
-                carId = carMatch[1];
-            }
+            const { seriesId, carId } = extractIdsFromUrl(pasted);
 
             if (!seriesId) {
-                // 如果URL中没有找到series_id，尝试把整个输入当作纯数字ID
                 const numMatch = pasted.match(/^(\d+)$/);
                 if (numMatch) {
-                    seriesId = numMatch[1];
-                } else {
-                    alert('无法从链接中提取 series_id。\n\n请确保粘贴的是懂车帝的车型链接，格式类似：\n• https://www.dongchedi.com/auto/series/6228\n• 或带 series_id=6228 的链接');
+                    // 纯数字当作series_id
+                    document.getElementById('manualId').value = numMatch[1];
+                    document.getElementById('manualCarId').value = '';
+                    const url = buildInteriorUrl(numMatch[1], '');
+                    window.open(url, '_blank');
                     return;
                 }
+                alert('无法从链接中提取 series_id。\n\n请确保粘贴的是懂车帝的车型链接，格式类似：\n• https://m.dcdapp.com/motor/inapp/pano-new/inner.html?series_id=4538\n• https://www.dongchedi.com/auto/series/4538');
+                return;
             }
 
             // 填充到手动输入区域
@@ -812,6 +832,69 @@
                 saveUserCar(name, seriesId, carId);
             }
             addToHistory(name || '手动输入 (ID:' + seriesId + ')', seriesId);
+        }
+
+        // 批量导入车型
+        function batchImport() {
+            const urlsText = document.getElementById('batchUrls').value.trim();
+            const namesText = document.getElementById('batchNames').value.trim();
+
+            if (!urlsText) {
+                alert('请粘贴懂车帝全景内饰链接');
+                return;
+            }
+
+            const urls = urlsText.split('\n').map(s => s.trim()).filter(s => s);
+            const names = namesText.split('\n').map(s => s.trim()).filter(s => s);
+
+            let successCount = 0;
+            let failCount = 0;
+            let results = [];
+
+            urls.forEach((url, i) => {
+                const { seriesId, carId } = extractIdsFromUrl(url);
+                const name = names[i] || '';
+
+                if (seriesId) {
+                    if (name) {
+                        saveUserCar(name, seriesId, carId);
+                    }
+                    successCount++;
+                    results.push(`✅ ${name || '未命名'} (series_id: ${seriesId})`);
+                } else {
+                    // 尝试当作纯数字
+                    const numMatch = url.match(/^(\d+)$/);
+                    if (numMatch) {
+                        if (name) saveUserCar(name, numMatch[1], '');
+                        successCount++;
+                        results.push(`✅ ${name || '未命名'} (series_id: ${numMatch[1]})`);
+                    } else {
+                        failCount++;
+                        results.push(`❌ 第${i + 1}行：无法提取 series_id`);
+                    }
+                }
+            });
+
+            // 刷新用户车型标签
+            renderUserCars();
+
+            // 显示结果
+            const resultDiv = document.getElementById('batchResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>📦 导入完成：</strong>成功 ${successCount} 个，失败 ${failCount} 个
+                    <div style="margin-top: 10px; font-size: 13px; color: #666;">
+                        ${results.join('<br>')}
+                    </div>
+                </div>
+            `;
+
+            // 清空输入框
+            if (failCount === 0) {
+                document.getElementById('batchUrls').value = '';
+                document.getElementById('batchNames').value = '';
+            }
         }
 
         // 添加到历史记录
