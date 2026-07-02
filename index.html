@@ -394,13 +394,17 @@
             <div class="hot-section">
                 <div class="hot-title">🔥 热门车型：</div>
                 <div class="hot-tags">
-                    <button class="hot-tag" onclick="selectHotCar('小米SU7', '6187')">小米SU7</button>
-                    <button class="hot-tag" onclick="selectHotCar('特斯拉Model 3', '3762')">Model 3</button>
-                    <button class="hot-tag" onclick="selectHotCar('比亚迪秦PLUS', '4802')">秦PLUS</button>
-                    <button class="hot-tag" onclick="selectHotCar('问界M7', '5820')">问界M7</button>
-                    <button class="hot-tag" onclick="selectHotCar('理想L7', '6173')">理想L7</button>
-                    <button class="hot-tag" onclick="selectHotCar('蔚来ET5', '5409')">蔚来ET5</button>
-                    <button class="hot-tag" onclick="selectHotCar('小鹏P7', '4156')">小鹏P7</button>
+                    <button class="hot-tag" onclick="selectHotCar('小米SU7')">小米SU7</button>
+                    <button class="hot-tag" onclick="selectHotCar('特斯拉Model 3')">Model 3</button>
+                    <button class="hot-tag" onclick="selectHotCar('比亚迪秦PLUS')">秦PLUS</button>
+                    <button class="hot-tag" onclick="selectHotCar('问界M7')">问界M7</button>
+                    <button class="hot-tag" onclick="selectHotCar('理想L7')">理想L7</button>
+                    <button class="hot-tag" onclick="selectHotCar('蔚来ET5')">蔚来ET5</button>
+                    <button class="hot-tag" onclick="selectHotCar('小鹏P7')">小鹏P7</button>
+                    <button class="hot-tag" onclick="selectHotCar('宝马iX3')">宝马iX3</button>
+                    <button class="hot-tag" onclick="selectHotCar('宝马3系')">宝马3系</button>
+                    <button class="hot-tag" onclick="selectHotCar('奔驰C级')">奔驰C级</button>
+                    <button class="hot-tag" onclick="selectHotCar('极氪001')">极氪001</button>
                 </div>
             </div>
         </div>
@@ -479,17 +483,103 @@
         // 车型数据库（常见车型）
         // selected_car_id 是具体配置ID，如果不知道可以留空，全景页面会使用默认配置
         const carDatabase = {
-            '小米SU7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155' },
-            'su7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155' },
-            '特斯拉Model 3': { id: '3762', brand: '特斯拉', emoji: '⚡', carId: '' },
-            'model3': { id: '3762', brand: '特斯拉', emoji: '⚡', carId: '' },
-            'model 3': { id: '3762', brand: '特斯拉', emoji: '⚡', carId: '' },
-            '比亚迪秦PLUS': { id: '4802', brand: '比亚迪', emoji: '🔋', carId: '' },
-            '秦plus': { id: '4802', brand: '比亚迪', emoji: '🔋', carId: '' },
-            '问界M7': { id: '5820', brand: '问界', emoji: '🚀', carId: '' },
-            '理想L7': { id: '6173', brand: '理想汽车', emoji: '🛋️', carId: '' },
-            '蔚来ET5': { id: '5409', brand: '蔚来', emoji: '🔵', carId: '' },
-            '小鹏P7': { id: '4156', brand: '小鹏汽车', emoji: '🤖', carId: '76134' },
+            // 小米
+            '小米SU7': { id: '6228', brand: '小米汽车', emoji: '🏎️', carId: '' },
+            'su7': { id: '6228', brand: '小米汽车', emoji: '🏎️', carId: '' },
+            // 特斯拉
+            '特斯拉Model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '' },
+            'model3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '' },
+            'model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '' },
+            '特斯拉Model Y': { id: '3548', brand: '特斯拉', emoji: '⚡', carId: '' },
+            'modely': { id: '3548', brand: '特斯拉', emoji: '⚡', carId: '' },
+            'model y': { id: '3548', brand: '特斯拉', emoji: '⚡', carId: '' },
+            // 比亚迪
+            '比亚迪秦PLUS': { id: '4836', brand: '比亚迪', emoji: '🔋', carId: '' },
+            '秦plus': { id: '4836', brand: '比亚迪', emoji: '🔋', carId: '' },
+            '秦plus dmi': { id: '4836', brand: '比亚迪', emoji: '🔋', carId: '' },
+            '比亚迪汉': { id: '4165', brand: '比亚迪', emoji: '🔋', carId: '' },
+            '比亚迪宋PLUS': { id: '4359', brand: '比亚迪', emoji: '🔋', carId: '' },
+            '比亚迪海豹': { id: '5282', brand: '比亚迪', emoji: '🔋', carId: '' },
+            '比亚迪元PLUS': { id: '5010', brand: '比亚迪', emoji: '🔋', carId: '' },
+            // 问界
+            '问界M7': { id: '5723', brand: '问界', emoji: '🚀', carId: '' },
+            '问界M5': { id: '5236', brand: '问界', emoji: '🚀', carId: '' },
+            '问界M9': { id: '6307', brand: '问界', emoji: '🚀', carId: '' },
+            // 理想
+            '理想L7': { id: '5532', brand: '理想汽车', emoji: '🛋️', carId: '' },
+            '理想L9': { id: '5412', brand: '理想汽车', emoji: '🛋️', carId: '' },
+            '理想L8': { id: '5531', brand: '理想汽车', emoji: '🛋️', carId: '' },
+            '理想MEGA': { id: '6418', brand: '理想汽车', emoji: '🛋️', carId: '' },
+            // 蔚来
+            '蔚来ET5': { id: '5318', brand: '蔚来', emoji: '🔵', carId: '' },
+            '蔚来ES6': { id: '3862', brand: '蔚来', emoji: '🔵', carId: '' },
+            '蔚来ET7': { id: '4908', brand: '蔚来', emoji: '🔵', carId: '' },
+            '蔚来ES8': { id: '2996', brand: '蔚来', emoji: '🔵', carId: '' },
+            '蔚来EC6': { id: '4490', brand: '蔚来', emoji: '🔵', carId: '' },
+            // 小鹏
+            '小鹏P7': { id: '4156', brand: '小鹏汽车', emoji: '🤖', carId: '' },
+            '小鹏G6': { id: '5687', brand: '小鹏汽车', emoji: '🤖', carId: '' },
+            '小鹏G9': { id: '5468', brand: '小鹏汽车', emoji: '🤖', carId: '' },
+            '小鹏X9': { id: '6389', brand: '小鹏汽车', emoji: '🤖', carId: '' },
+            // 宝马
+            '宝马3系': { id: '710', brand: '宝马', emoji: '🏁', carId: '' },
+            '宝马5系': { id: '711', brand: '宝马', emoji: '🏁', carId: '' },
+            '宝马X3': { id: '716', brand: '宝马', emoji: '🏁', carId: '' },
+            '宝马X5': { id: '718', brand: '宝马', emoji: '🏁', carId: '' },
+            '宝马iX3': { id: '4625', brand: '宝马', emoji: '🏁', carId: '' },
+            'ix3': { id: '4625', brand: '宝马', emoji: '🏁', carId: '' },
+            '宝马i3': { id: '5055', brand: '宝马', emoji: '🏁', carId: '' },
+            '宝马7系': { id: '712', brand: '宝马', emoji: '🏁', carId: '' },
+            '宝马X1': { id: '715', brand: '宝马', emoji: '🏁', carId: '' },
+            // 奔驰
+            '奔驰C级': { id: '699', brand: '奔驰', emoji: '⭐', carId: '' },
+            '奔驰E级': { id: '700', brand: '奔驰', emoji: '⭐', carId: '' },
+            '奔驰GLC': { id: '703', brand: '奔驰', emoji: '⭐', carId: '' },
+            '奔驰S级': { id: '701', brand: '奔驰', emoji: '⭐', carId: '' },
+            '奔驰A级': { id: '697', brand: '奔驰', emoji: '⭐', carId: '' },
+            '奔驰EQC': { id: '4222', brand: '奔驰', emoji: '⭐', carId: '' },
+            // 奥迪
+            '奥迪A4L': { id: '684', brand: '奥迪', emoji: '🔴', carId: '' },
+            '奥迪A6L': { id: '686', brand: '奥迪', emoji: '🔴', carId: '' },
+            '奥迪Q5L': { id: '690', brand: '奥迪', emoji: '🔴', carId: '' },
+            '奥迪A3': { id: '682', brand: '奥迪', emoji: '🔴', carId: '' },
+            '奥迪e-tron': { id: '3855', brand: '奥迪', emoji: '🔴', carId: '' },
+            // 大众
+            '大众朗逸': { id: '836', brand: '大众', emoji: '🇩🇪', carId: '' },
+            '大众速腾': { id: '840', brand: '大众', emoji: '🇩🇪', carId: '' },
+            '大众帕萨特': { id: '837', brand: '大众', emoji: '🇩🇪', carId: '' },
+            '大众迈腾': { id: '835', brand: '大众', emoji: '🇩🇪', carId: '' },
+            '大众ID.4': { id: '4638', brand: '大众', emoji: '🇩🇪', carId: '' },
+            // 丰田
+            '丰田凯美瑞': { id: '866', brand: '丰田', emoji: '🇯🇵', carId: '' },
+            '丰田卡罗拉': { id: '858', brand: '丰田', emoji: '🇯🇵', carId: '' },
+            '丰田RAV4': { id: '867', brand: '丰田', emoji: '🇯🇵', carId: '' },
+            '丰田汉兰达': { id: '870', brand: '丰田', emoji: '🇯🇵', carId: '' },
+            // 本田
+            '本田雅阁': { id: '812', brand: '本田', emoji: '🇯🇵', carId: '' },
+            '本田思域': { id: '808', brand: '本田', emoji: '🇯🇵', carId: '' },
+            '本田CR-V': { id: '813', brand: '本田', emoji: '🇯🇵', carId: '' },
+            '本田飞度': { id: '806', brand: '本田', emoji: '🇯🇵', carId: '' },
+            // 吉利
+            '吉利星瑞': { id: '4581', brand: '吉利', emoji: '🇨🇳', carId: '' },
+            '吉利银河L7': { id: '6029', brand: '吉利', emoji: '🇨🇳', carId: '' },
+            // 长安
+            '长安CS75 PLUS': { id: '3413', brand: '长安', emoji: '🇨🇳', carId: '' },
+            '长安UNI-V': { id: '5072', brand: '长安', emoji: '🇨🇳', carId: '' },
+            // 哈弗
+            '哈弗H6': { id: '881', brand: '哈弗', emoji: '🇨🇳', carId: '' },
+            // 零跑
+            '零跑C11': { id: '4922', brand: '零跑', emoji: '🔵', carId: '' },
+            '零跑C01': { id: '5308', brand: '零跑', emoji: '🔵', carId: '' },
+            // 极氪
+            '极氪001': { id: '4880', brand: '极氪', emoji: '⚡', carId: '' },
+            '极氪007': { id: '6351', brand: '极氪', emoji: '⚡', carId: '' },
+            // 哪吒
+            '哪吒S': { id: '5251', brand: '哪吒', emoji: '🎭', carId: '' },
+            // 深蓝
+            '深蓝SL03': { id: '5361', brand: '深蓝', emoji: '🌊', carId: '' },
+            // 腾势
+            '腾势D9': { id: '5346', brand: '腾势', emoji: '🏆', carId: '' },
         };
 
         // 当前选中的车型
@@ -528,29 +618,39 @@
             if (result) {
                 showResult(result.name, result.data);
             } else {
-                // 未找到，提示用户手动输入
-                if (confirm(`未找到"${input}"的匹配结果。\n\n是否跳转到懂车帝搜索页面？`)) {
-                    const searchUrl = `https://www.dongchedi.com/search?keyword=${encodeURIComponent(input)}`;
-                    window.open(searchUrl, '_blank');
-                    addToHistory(input, '搜索');
-                }
+                // 未找到，引导用户到手动输入区域
+                document.getElementById('manualName').value = input;
+                document.getElementById('manualId').value = '';
+                document.getElementById('manualCarId').value = '';
+                // 滚动到手动输入区域
+                document.querySelector('.manual-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                alert(`未找到"${input}"的匹配车型。\n\n已为您填入车型名称，请在下方手动输入该车型的 series_id 后直接跳转全景内饰。\n\n获取方法：在懂车帝App搜索该车型 → 进入全景内饰页面 → 分享链接中找到 series_id`);
             }
         }
 
         // 查找车型
         function findCar(keyword) {
-            keyword = keyword.toLowerCase();
+            keyword = keyword.toLowerCase().replace(/\s+/g, '');
 
             // 精确匹配
             for (const [name, data] of Object.entries(carDatabase)) {
-                if (name.toLowerCase() === keyword) {
+                if (name.toLowerCase().replace(/\s+/g, '') === keyword) {
                     return { name, data };
                 }
             }
 
-            // 模糊匹配
+            // 数据库名称包含搜索词（最常见场景：搜"ix3"匹配"宝马iX3"）
             for (const [name, data] of Object.entries(carDatabase)) {
-                if (name.toLowerCase().includes(keyword) || keyword.includes(name.toLowerCase())) {
+                const normalizedName = name.toLowerCase().replace(/\s+/g, '');
+                if (normalizedName.includes(keyword)) {
+                    return { name, data };
+                }
+            }
+
+            // 搜索词包含数据库名称（搜"小米SU7 Pro"匹配"小米SU7"）
+            for (const [name, data] of Object.entries(carDatabase)) {
+                const normalizedName = name.toLowerCase().replace(/\s+/g, '');
+                if (keyword.includes(normalizedName)) {
                     return { name, data };
                 }
             }
@@ -580,8 +680,8 @@
         }
 
         // 选择热门车型
-        function selectHotCar(name, id) {
-            const data = carDatabase[name.toLowerCase()] || carDatabase[name];
+        function selectHotCar(name) {
+            const data = carDatabase[name] || carDatabase[name.toLowerCase()];
             if (data) {
                 showResult(name, data);
                 document.getElementById('searchInput').value = name;
