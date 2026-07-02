@@ -577,7 +577,8 @@
                     <button class="action-btn btn-interior" onclick="goToInteriorWithCarId()" style="padding: 10px 16px; font-size: 13px;">跳转指定年款</button>
                 </div>
                 <div style="font-size: 12px; color: #999; margin-top: 8px;">
-                    💡 在懂车帝全景内饰页面分享链接中可找到 selected_car_id，输入后自动保存
+                    💡 在懂车帝全景内饰页面分享链接中可找到 selected_car_id，输入后自动保存。<br>
+                    颜色参数也会自动从链接中提取并保存。
                 </div>
             </div>
         </div>
@@ -670,8 +671,8 @@
         // 其他车型通过搜索跳转懂车帝，或手动输入ID（自动保存）
         const carDatabase = {
             // 小米
-            '小米SU7': { id: '6228', brand: '小米汽车', emoji: '🏎️', carId: '' },
-            'su7': { id: '6228', brand: '小米汽车', emoji: '🏎️', carId: '' },
+            '小米SU7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE' },
+            'su7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE' },
             // 特斯拉
             '特斯拉Model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '' },
             'model3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '' },
@@ -724,9 +725,16 @@
         }
 
         // 保存用户自定义车型到localStorage
-        function saveUserCar(name, seriesId, carId) {
+        function saveUserCar(name, seriesId, carId, color, subColor) {
             const brand = name.replace(/[a-zA-Z0-9\s]+$/, '').trim() || '其他';
-            userDatabase[name] = { id: seriesId, brand: brand, emoji: '🚗', carId: carId || '' };
+            userDatabase[name] = {
+                id: seriesId,
+                brand: brand,
+                emoji: '🚗',
+                carId: carId || '',
+                color: color || '',
+                subColor: subColor || ''
+            };
             carDatabase[name] = userDatabase[name];
             localStorage.setItem('userCarDatabase', JSON.stringify(userDatabase));
         }
@@ -839,8 +847,14 @@
         }
 
         // 构建全景内饰URL（不传selected_car_id则显示最新款）
-        function buildInteriorUrl(seriesId, carId) {
+        function buildInteriorUrl(seriesId, carId, color, subColor) {
             let url = `https://m.dcdapp.com/motor/inapp/pano-new/inner.html?series_id=${seriesId}`;
+            if (color) {
+                url += `&selected_color=${encodeURIComponent(color)}`;
+            }
+            if (subColor) {
+                url += `&selected_sub_color=${encodeURIComponent(subColor)}`;
+            }
             if (carId) {
                 url += `&selected_car_id=${carId}`;
             }
@@ -854,7 +868,7 @@
                 return;
             }
 
-            const url = buildInteriorUrl(currentCar.id, '');
+            const url = buildInteriorUrl(currentCar.id, '', currentCar.color, currentCar.subColor);
             window.open(url, '_blank');
         }
 
@@ -874,7 +888,7 @@
             // 保存到用户数据库
             saveUserCar(currentCar.name, currentCar.id, carId);
 
-            const url = buildInteriorUrl(currentCar.id, carId);
+            const url = buildInteriorUrl(currentCar.id, carId, currentCar.color, currentCar.subColor);
             window.open(url, '_blank');
         }
 
@@ -917,14 +931,17 @@
                 addToHistory(name, id);
             }
 
+            // 手动输入时不传颜色参数（用户可能没有指定）
             const url = buildInteriorUrl(id, carId);
             window.open(url, '_blank');
         }
 
-        // 从URL中提取 series_id 和 car_id
+        // 从URL中提取 series_id、car_id 和颜色参数
         function extractIdsFromUrl(url) {
             let seriesId = '';
             let carId = '';
+            let color = '';
+            let subColor = '';
 
             const seriesMatch = url.match(/series_id[=:]\s*(\d+)/i)
                 || url.match(/series[=/]\s*(\d+)/i)
@@ -935,7 +952,14 @@
                 || url.match(/car_id[=:]\s*(\d+)/i);
             if (carMatch) carId = carMatch[1];
 
-            return { seriesId, carId };
+            // 提取颜色参数
+            const colorMatch = url.match(/selected_color[=:]\s*([^&]+)/i);
+            if (colorMatch) color = decodeURIComponent(colorMatch[1]);
+
+            const subColorMatch = url.match(/selected_sub_color[=:]\s*([^&]+)/i);
+            if (subColorMatch) subColor = decodeURIComponent(subColorMatch[1]);
+
+            return { seriesId, carId, color, subColor };
         }
 
         // 从粘贴的链接中提取 series_id 和 car_id 并跳转
@@ -947,7 +971,7 @@
                 return;
             }
 
-            const { seriesId, carId } = extractIdsFromUrl(pasted);
+            const { seriesId, carId, color, subColor } = extractIdsFromUrl(pasted);
 
             if (!seriesId) {
                 const numMatch = pasted.match(/^(\d+)$/);
@@ -955,6 +979,7 @@
                     // 纯数字当作series_id
                     document.getElementById('manualId').value = numMatch[1];
                     document.getElementById('manualCarId').value = '';
+                    // 纯数字输入时不传颜色参数
                     const url = buildInteriorUrl(numMatch[1], '');
                     window.open(url, '_blank');
                     return;
@@ -968,13 +993,13 @@
             document.getElementById('manualCarId').value = carId;
 
             // 构建URL并跳转
-            const url = buildInteriorUrl(seriesId, carId);
+            const url = buildInteriorUrl(seriesId, carId, color, subColor);
             window.open(url, '_blank');
 
-            // 如果有车型名称，自动保存
+            // 如果有车型名称，自动保存（包含颜色参数）
             const name = document.getElementById('manualName').value.trim();
             if (name) {
-                saveUserCar(name, seriesId, carId);
+                saveUserCar(name, seriesId, carId, color, subColor);
             }
             addToHistory(name || '手动输入 (ID:' + seriesId + ')', seriesId);
         }
@@ -997,12 +1022,12 @@
             let results = [];
 
             urls.forEach((url, i) => {
-                const { seriesId, carId } = extractIdsFromUrl(url);
+                const { seriesId, carId, color, subColor } = extractIdsFromUrl(url);
                 const name = names[i] || '';
 
                 if (seriesId) {
                     if (name) {
-                        saveUserCar(name, seriesId, carId);
+                        saveUserCar(name, seriesId, carId, color, subColor);
                     }
                     successCount++;
                     results.push(`✅ ${name || '未命名'} (series_id: ${seriesId})`);
@@ -1183,7 +1208,7 @@
             document.getElementById('viewGuideCarName').textContent = currentCar.name;
 
             // 保存当前要跳转的URL
-            window._pendingViewUrl = buildInteriorUrl(currentCar.id, document.getElementById('yearCarId').value.trim() || '');
+            window._pendingViewUrl = buildInteriorUrl(currentCar.id, document.getElementById('yearCarId').value.trim() || '', currentCar.color, currentCar.subColor);
 
             // 显示提示框
             document.getElementById('viewGuideModal').classList.add('show');
