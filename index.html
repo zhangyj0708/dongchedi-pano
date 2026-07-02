@@ -426,21 +426,33 @@
             </div>
         </div>
 
-        <!-- 手动输入 -->
+        <!-- 粘贴链接提取 -->
         <div class="manual-section">
-            <div class="manual-title">🔧 手动输入（高级模式）</div>
+            <div class="manual-title">🔗 粘贴懂车帝链接，自动提取ID并跳转</div>
             <div class="manual-form">
                 <div class="form-group">
-                    <label class="form-label">车型名称：</label>
+                    <label class="form-label">粘贴懂车帝全景内饰链接：</label>
+                    <input type="text" class="form-input" id="pasteUrl" placeholder="粘贴从懂车帝App分享出来的全景内饰链接...">
+                </div>
+                <button class="manual-btn" onclick="extractAndJump()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">🚀 提取并跳转全景内饰</button>
+            </div>
+        </div>
+
+        <!-- 手动输入 -->
+        <div class="manual-section">
+            <div class="manual-title">🔧 手动输入ID</div>
+            <div class="manual-form">
+                <div class="form-group">
+                    <label class="form-label">车型名称（可选）：</label>
                     <input type="text" class="form-input" id="manualName" placeholder="如：小米SU7">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">系列ID（Series ID）：</label>
-                    <input type="text" class="form-input" id="manualId" placeholder="如：6228（在懂车帝URL中查找）">
+                    <label class="form-label">系列ID（series_id）：</label>
+                    <input type="text" class="form-input" id="manualId" placeholder="如：6228">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">配置ID（Car ID，可选）：</label>
-                    <input type="text" class="form-input" id="manualCarId" placeholder="如：76134（可留空，使用默认配置）">
+                    <label class="form-label">配置ID（selected_car_id，可选）：</label>
+                    <input type="text" class="form-input" id="manualCarId" placeholder="可留空">
                 </div>
                 <button class="manual-btn" onclick="manualJump()">🚀 直接跳转全景内饰</button>
             </div>
@@ -462,16 +474,16 @@
             <div class="tips-title">💡 使用说明</div>
             <div class="tips-content">
                 <ul>
-                    <li><strong>快速使用：</strong>点击热门车型标签，一键跳转到全景内饰</li>
-                    <li><strong>搜索功能：</strong>输入车型名称，自动匹配</li>
-                    <li><strong>手动模式：</strong>如果知道系列ID，可直接输入跳转</li>
-                    <li><strong>配置ID（可选）：</strong>指定具体的车型配置，留空则使用默认配置</li>
-                    <li><strong>如何获取ID：</strong>
+                    <li><strong>🔥 热门车型：</strong>点击标签一键跳转全景内饰</li>
+                    <li><strong>🔗 粘贴链接：</strong>从懂车帝App分享全景内饰链接，粘贴到上方自动提取ID并跳转（推荐！适用车型不限）</li>
+                    <li><strong>🔍 搜索功能：</strong>输入车型名称自动匹配</li>
+                    <li><strong>🔧 手动输入：</strong>直接输入 series_id 跳转</li>
+                    <li><strong>如何获取链接：</strong>
                         <ol>
-                            <li>打开懂车帝App或网站，搜索车型</li>
-                            <li>进入车型的全景内饰页面</li>
-                            <li>分享链接中可以看到 <strong>series_id</strong> 和 <strong>selected_car_id</strong></li>
-                            <li>例如：series_id=<strong>4156</strong>&selected_car_id=<strong>76134</strong></li>
+                            <li>打开懂车帝App，搜索目标车型</li>
+                            <li>进入车型详情页，点击"全景内饰"</li>
+                            <li>点击分享按钮，复制链接</li>
+                            <li>粘贴到本页面的"粘贴链接"区域即可</li>
                         </ol>
                     </li>
                 </ul>
@@ -747,6 +759,55 @@
             if (name) {
                 addToHistory(name, id);
             }
+        }
+
+        // 从粘贴的链接中提取 series_id 和 car_id 并跳转
+        function extractAndJump() {
+            const pasted = document.getElementById('pasteUrl').value.trim();
+
+            if (!pasted) {
+                alert('请粘贴懂车帝链接');
+                return;
+            }
+
+            // 尝试从URL中提取 series_id
+            let seriesId = '';
+            let carId = '';
+
+            // 匹配 series_id=数字
+            const seriesMatch = pasted.match(/series_id[=:]\s*(\d+)/i)
+                || pasted.match(/series[=/]\s*(\d+)/i)
+                || pasted.match(/auto\/series\/(\d+)/i);
+            if (seriesMatch) {
+                seriesId = seriesMatch[1];
+            }
+
+            // 匹配 selected_car_id=数字 或 car_id=数字
+            const carMatch = pasted.match(/selected_car_id[=:]\s*(\d+)/i)
+                || pasted.match(/car_id[=:]\s*(\d+)/i);
+            if (carMatch) {
+                carId = carMatch[1];
+            }
+
+            if (!seriesId) {
+                // 如果URL中没有找到series_id，尝试把整个输入当作纯数字ID
+                const numMatch = pasted.match(/^(\d+)$/);
+                if (numMatch) {
+                    seriesId = numMatch[1];
+                } else {
+                    alert('无法从链接中提取 series_id。\n\n请确保粘贴的是懂车帝的车型链接，格式类似：\n• https://www.dongchedi.com/auto/series/6228\n• 或带 series_id=6228 的链接');
+                    return;
+                }
+            }
+
+            // 填充到手动输入区域
+            document.getElementById('manualId').value = seriesId;
+            document.getElementById('manualCarId').value = carId;
+
+            // 构建URL并跳转
+            const url = buildInteriorUrl(seriesId, carId);
+            window.open(url, '_blank');
+            addToHistory('手动输入 (ID:' + seriesId + ')', seriesId);
         }
 
         // 添加到历史记录
