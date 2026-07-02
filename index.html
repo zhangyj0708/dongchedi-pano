@@ -422,9 +422,19 @@
                 </div>
             </div>
             <div class="action-buttons">
-                <button class="action-btn btn-interior" onclick="goToInterior()">🏠 查看全景内饰</button>
+                <button class="action-btn btn-interior" onclick="goToInterior()">🏠 查看全景内饰（最新款）</button>
                 <button class="action-btn btn-exterior" onclick="goToExterior()">🚙 查看外观</button>
                 <button class="action-btn btn-params" onclick="goToParams()">📊 查看参数配置</button>
+            </div>
+            <div style="margin-top: 15px; padding: 15px; background: #f0f0ff; border-radius: 8px;">
+                <div style="font-size: 14px; color: #666; margin-bottom: 10px;">🎯 指定年款/配置跳转（可选）：</div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="yearCarId" placeholder="输入配置ID（selected_car_id）" style="flex:1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    <button class="action-btn btn-interior" onclick="goToInteriorWithCarId()" style="padding: 10px 16px; font-size: 13px;">跳转指定年款</button>
+                </div>
+                <div style="font-size: 12px; color: #999; margin-top: 8px;">
+                    💡 在懂车帝全景内饰页面分享链接中可找到 selected_car_id，输入后自动保存
+                </div>
             </div>
         </div>
 
@@ -648,6 +658,9 @@
             document.getElementById('carName').textContent = name;
             document.getElementById('carSeries').textContent = `品牌: ${data.brand} | 系列ID: ${data.id}`;
 
+            // 预填已保存的配置ID
+            document.getElementById('yearCarId').value = data.carId || '';
+
             document.getElementById('resultSection').classList.add('show');
 
             // 添加到历史
@@ -663,23 +676,43 @@
             }
         }
 
-        // 构建全景内饰URL
+        // 构建全景内饰URL（不传selected_car_id则显示最新款）
         function buildInteriorUrl(seriesId, carId) {
-            let url = `https://m.dcdapp.com/motor/inapp/pano-new/inner.html?series_id=${seriesId}&selected_color=%23000000&selected_sub_color=`;
+            let url = `https://m.dcdapp.com/motor/inapp/pano-new/inner.html?series_id=${seriesId}`;
             if (carId) {
                 url += `&selected_car_id=${carId}`;
             }
             return url;
         }
 
-        // 跳转到全景内饰
+        // 跳转到全景内饰（默认最新款）
         function goToInterior() {
             if (!currentCar) {
                 alert('请先选择车型');
                 return;
             }
 
-            const url = buildInteriorUrl(currentCar.id, currentCar.carId || '');
+            const url = buildInteriorUrl(currentCar.id, '');
+            window.open(url, '_blank');
+        }
+
+        // 跳转指定年款的全景内饰
+        function goToInteriorWithCarId() {
+            if (!currentCar) {
+                alert('请先选择车型');
+                return;
+            }
+
+            const carId = document.getElementById('yearCarId').value.trim();
+            if (!carId) {
+                alert('请输入配置ID（selected_car_id）');
+                return;
+            }
+
+            // 保存到用户数据库
+            saveUserCar(currentCar.name, currentCar.id, carId);
+
+            const url = buildInteriorUrl(currentCar.id, carId);
             window.open(url, '_blank');
         }
 
