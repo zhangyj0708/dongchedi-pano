@@ -603,11 +603,26 @@
         // 历史记录
         let history = JSON.parse(localStorage.getItem('carHistory') || '[]');
 
-        // 初始化
+        // 用户自定义车型数据库（从localStorage加载，优先级高于内置数据库）
+        let userDatabase = JSON.parse(localStorage.getItem('userCarDatabase') || '{}');
+
+        // 初始化：合并用户数据库到主数据库
         document.addEventListener('DOMContentLoaded', function() {
+            // 用户保存的ID覆盖内置数据库
+            for (const [name, data] of Object.entries(userDatabase)) {
+                carDatabase[name] = data;
+            }
             renderHistory();
             setupEnterKey();
         });
+
+        // 保存用户自定义车型到localStorage
+        function saveUserCar(name, seriesId, carId) {
+            const brand = name.replace(/[a-zA-Z0-9\s]+$/, '').trim() || '其他';
+            userDatabase[name] = { id: seriesId, brand: brand, emoji: '🚗', carId: carId || '' };
+            carDatabase[name] = userDatabase[name];
+            localStorage.setItem('userCarDatabase', JSON.stringify(userDatabase));
+        }
 
         // 设置回车键搜索
         function setupEnterKey() {
@@ -627,19 +642,29 @@
                 return;
             }
 
-            // 模糊匹配
+            // 先查用户数据库，再查内置数据库
             const result = findCar(input);
 
             if (result) {
                 showResult(result.name, result.data);
             } else {
-                // 未找到，引导用户到手动输入区域
-                document.getElementById('manualName').value = input;
-                document.getElementById('manualId').value = '';
-                document.getElementById('manualCarId').value = '';
-                // 滚动到手动输入区域
-                document.querySelector('.manual-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                alert(`未找到"${input}"的匹配车型。\n\n已为您填入车型名称，请在下方手动输入该车型的 series_id 后直接跳转全景内饰。\n\n获取方法：在懂车帝App搜索该车型 → 进入全景内饰页面 → 分享链接中找到 series_id`);
+                // 未找到，给用户两个选择
+                const choice = confirm(
+                    `未找到"${input}"的匹配车型。\n\n` +
+                    `点「确定」→ 跳转到懂车帝搜索页，从搜索结果进入全景内饰\n` +
+                    `点「取消」→ 回到页面手动输入 series_id（会自动保存，下次直接用）`
+                );
+                if (choice) {
+                    // 跳转到懂车帝搜索页
+                    const searchUrl = `https://www.dongchedi.com/search?keyword=${encodeURIComponent(input)}&type=1`;
+                    window.open(searchUrl, '_blank');
+                } else {
+                    // 滚动到手动输入区域
+                    document.getElementById('manualName').value = input;
+                    document.getElementById('manualId').value = '';
+                    document.getElementById('manualCarId').value = '';
+                    document.querySelector('.manual-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
             }
         }
 
@@ -756,12 +781,14 @@
                 return;
             }
 
-            const url = buildInteriorUrl(id, carId);
-            window.open(url, '_blank');
-
+            // 自动保存到用户数据库，下次直接用
             if (name) {
+                saveUserCar(name, id, carId);
                 addToHistory(name, id);
             }
+
+            const url = buildInteriorUrl(id, carId);
+            window.open(url, '_blank');
         }
 
         // 从粘贴的链接中提取 series_id 和 car_id 并跳转
@@ -810,7 +837,13 @@
             // 构建URL并跳转
             const url = buildInteriorUrl(seriesId, carId);
             window.open(url, '_blank');
-            addToHistory('手动输入 (ID:' + seriesId + ')', seriesId);
+
+            // 如果有车型名称，自动保存
+            const name = document.getElementById('manualName').value.trim();
+            if (name) {
+                saveUserCar(name, seriesId, carId);
+            }
+            addToHistory(name || '手动输入 (ID:' + seriesId + ')', seriesId);
         }
 
         // 添加到历史记录
