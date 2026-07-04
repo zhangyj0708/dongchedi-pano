@@ -377,6 +377,12 @@
                 text-align: center;
             }
         }
+
+        /* Toast 轻提示动画 */
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -446,7 +452,7 @@
                     </button>
                     <button class="action-btn" onclick="goToViewDirect('passenger')" style="background: linear-gradient(135deg, #0984e3 0%, #0770c7 100%); color: white; padding: 15px 10px; font-size: 14px;">
                         🚗 前排副驾视角
-                        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">✅ 直达副驾驶位</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">有副驾数据直达，无数据则提示旋转查看</div>
                     </button>
                 </div>
             </div>
@@ -551,23 +557,23 @@
         // 其他车型通过搜索跳转懂车帝，或手动输入ID（自动保存）
         const carDatabase = {
             // 小米
-            '小米SU7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE' },
-            'su7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE' },
+            '小米SU7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE', hasVice: false },
+            'su7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE', hasVice: false },
             // 特斯拉
-            '特斯拉Model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '' },
-            'model3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '' },
-            'model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '' },
+            '特斯拉Model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false },
+            'model3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false },
+            'model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false },
             // 问界
-            '问界M7': { id: '5723', brand: '问界', emoji: '🚀', carId: '' },
+            '问界M7': { id: '5723', brand: '问界', emoji: '🚀', carId: '', hasVice: false },
             // 宝马
-            '宝马3系': { id: '4538', brand: '宝马', emoji: '🏁', carId: '' },
-            '宝马iX3': { id: '4538', brand: '宝马', emoji: '🏁', carId: '' },
-            'ix3': { id: '4538', brand: '宝马', emoji: '🏁', carId: '' },
+            '宝马3系': { id: '4538', brand: '宝马', emoji: '🏁', carId: '', hasVice: false },
+            '宝马iX3': { id: '4538', brand: '宝马', emoji: '🏁', carId: '', hasVice: false },
+            'ix3': { id: '4538', brand: '宝马', emoji: '🏁', carId: '', hasVice: false },
             // 奔驰
-            '奔驰C级': { id: '212', brand: '奔驰', emoji: '⭐', carId: '' },
+            '奔驰C级': { id: '212', brand: '奔驰', emoji: '⭐', carId: '', hasVice: false },
             // 路特斯
-            '路特斯Emeya': { id: '9275', brand: '路特斯', emoji: '🏎️', carId: '' },
-            'emeya': { id: '9275', brand: '路特斯', emoji: '🏎️', carId: '' },
+            '路特斯Emeya': { id: '9275', brand: '路特斯', emoji: '🏎️', carId: '', hasVice: true },
+            'emeya': { id: '9275', brand: '路特斯', emoji: '🏎️', carId: '', hasVice: true },
         };
 
         // 当前选中的车型
@@ -1035,12 +1041,34 @@
             passenger: 'vice_drive_vr' // 前排副驾
         };
 
-        // 跳转到指定视角（直接跳转，带 position 参数到达指定视角）
-        // 注意：不传颜色参数，避免干扰 position 的生效
+        // 显示轻提示（2秒后自动消失）
+        function showToast(msg) {
+            const existing = document.getElementById('viewToast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'viewToast';
+            toast.innerHTML = msg;
+            toast.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:14px 24px;border-radius:12px;font-size:15px;z-index:9999;max-width:90%;text-align:center;animation:toastIn 0.3s ease-out;box-shadow:0 4px 20px rgba(0,0,0,0.3);';
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 2500);
+        }
+
+        // 跳转到指定视角
         function goToViewDirect(viewType) {
             if (!currentCar) {
                 alert('请先选择车型');
                 return;
+            }
+
+            // 副驾按钮特殊处理：没有副驾数据的车型 → 跳主驾 + 提示旋转
+            if (viewType === 'passenger') {
+                const hasVice = currentCar.hasVice;
+                if (!hasVice) {
+                    const url = buildInteriorUrl(currentCar.id, '', '', '', 'front_vr');
+                    window.open(url, '_blank');
+                    showToast('👆 进入主驾后，<b>向右滑动屏幕</b>即可查看副驾驶区域');
+                    return;
+                }
             }
 
             const position = viewPositionMap[viewType] || '';
