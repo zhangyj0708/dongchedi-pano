@@ -129,126 +129,6 @@
             color: white;
         }
 
-        /* 视角提示框样式 */
-        .view-guide-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .view-guide-modal.show {
-            display: flex;
-        }
-
-        .view-guide-content {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 450px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .view-guide-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .view-guide-steps {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .view-guide-step {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .view-guide-step:last-child {
-            margin-bottom: 0;
-        }
-
-        .step-number {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .step-text {
-            font-size: 14px;
-            color: #555;
-            line-height: 1.5;
-        }
-
-        .step-text strong {
-            color: #333;
-        }
-
-        .view-guide-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .view-guide-btn {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .view-guide-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .view-guide-btn.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .view-guide-btn.secondary {
-            background: #f0f0f0;
-            color: #666;
-        }
-
         .result-section {
             background: white;
             border-radius: 20px;
@@ -547,24 +427,23 @@
                 <button class="action-btn btn-params" onclick="goToParams()">📊 查看参数配置</button>
             </div>
 
-            <!-- 四个视角快捷跳转 -->
+            <!-- 四个视角快捷跳转 - 直接跳转 -->
             <div style="margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #fff5f5, #ffe8e8); border-radius: 12px; border: 2px solid #ff6b6b;">
-                <div style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 15px;">🎬 快捷视角跳转</div>
-                <div style="font-size: 13px; color: #666; margin-bottom: 15px;">点击后跳转到全景内饰，页面会提示您如何切换到指定视角</div>
+                <div style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 15px;">🎬 快捷视角跳转（点击直接跳转）</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <button class="action-btn" onclick="goToView('rear_front')" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); color: white; padding: 15px 10px; font-size: 14px;">
+                    <button class="action-btn" onclick="goToViewDirect('rear_front')" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); color: white; padding: 15px 10px; font-size: 14px;">
                         🪑 第二排正视图
                         <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">看向正前方</div>
                     </button>
-                    <button class="action-btn" onclick="goToView('rear_side')" style="background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%); color: white; padding: 15px 10px; font-size: 14px;">
+                    <button class="action-btn" onclick="goToViewDirect('rear_side')" style="background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%); color: white; padding: 15px 10px; font-size: 14px;">
                         🪑 第二排侧视图
                         <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">看向侧面</div>
                     </button>
-                    <button class="action-btn" onclick="goToView('driver')" style="background: linear-gradient(135deg, #00b894 0%, #00a381 100%); color: white; padding: 15px 10px; font-size: 14px;">
+                    <button class="action-btn" onclick="goToViewDirect('driver')" style="background: linear-gradient(135deg, #00b894 0%, #00a381 100%); color: white; padding: 15px 10px; font-size: 14px;">
                         🚗 前排主驾视角
                         <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">驾驶员位置</div>
                     </button>
-                    <button class="action-btn" onclick="goToView('passenger')" style="background: linear-gradient(135deg, #0984e3 0%, #0770c7 100%); color: white; padding: 15px 10px; font-size: 14px;">
+                    <button class="action-btn" onclick="goToViewDirect('passenger')" style="background: linear-gradient(135deg, #0984e3 0%, #0770c7 100%); color: white; padding: 15px 10px; font-size: 14px;">
                         🚗 前排副驾视角
                         <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">副驾驶位置</div>
                     </button>
@@ -649,7 +528,7 @@
             <div class="tips-content">
                 <ul>
                     <li><strong>🔥 热门车型：</strong>点击标签一键跳转全景内饰</li>
-                    <li><strong>🎬 快捷视角：</strong>一键跳转到第二排正视图、第二排侧视图、主驾视角、副驾视角（页面会提示切换方法）</li>
+                    <li><strong>🎬 快捷视角：</strong>一键跳转全景内饰，支持第二排正视图、第二排侧视图、主驾视角、副驾视角</li>
                     <li><strong>🔗 粘贴链接：</strong>从懂车帝App分享全景内饰链接，粘贴到上方自动提取ID并跳转（推荐！适用车型不限）</li>
                     <li><strong>🔍 搜索功能：</strong>输入车型名称自动匹配</li>
                     <li><strong>🔧 手动输入：</strong>直接输入 series_id 跳转</li>
@@ -1141,111 +1020,17 @@
             }
         }
 
-        // 视角说明配置
-        const viewGuideConfig = {
-            rear_front: {
-                title: '🪑 第二排正视图',
-                icon: '👀',
-                steps: [
-                    { text: '进入全景内饰页面后，<strong>点击屏幕下方的座位切换按钮</strong>' },
-                    { text: '选择<strong>「后排」</strong>座位视角' },
-                    { text: '<strong>滑动屏幕旋转视角</strong>，将视线调整到<strong>正前方</strong>即可' }
-                ]
-            },
-            rear_side: {
-                title: '🪑 第二排侧视图',
-                icon: '👀',
-                steps: [
-                    { text: '进入全景内饰页面后，<strong>点击屏幕下方的座位切换按钮</strong>' },
-                    { text: '选择<strong>「后排」</strong>座位视角' },
-                    { text: '<strong>滑动屏幕旋转视角</strong>，将视线调整到<strong>侧面（左侧或右侧车窗方向）</strong>' }
-                ]
-            },
-            driver: {
-                title: '🚗 前排主驾视角',
-                icon: '👀',
-                steps: [
-                    { text: '进入全景内饰页面后，<strong>点击屏幕下方的座位切换按钮</strong>' },
-                    { text: '选择<strong>「主驾」</strong>座位视角' },
-                    { text: '页面会自动切换到<strong>驾驶员第一人称视角</strong>' }
-                ]
-            },
-            passenger: {
-                title: '🚗 前排副驾视角',
-                icon: '👀',
-                steps: [
-                    { text: '进入全景内饰页面后，<strong>点击屏幕下方的座位切换按钮</strong>' },
-                    { text: '选择<strong>「副驾」</strong>座位视角' },
-                    { text: '页面会自动切换到<strong>副驾驶第一人称视角</strong>' }
-                ]
-            }
-        };
-
-        // 跳转到指定视角
-        function goToView(viewType) {
+        // 跳转到指定视角（直接跳转，无提示框）
+        function goToViewDirect(viewType) {
             if (!currentCar) {
                 alert('请先选择车型');
                 return;
             }
 
-            const config = viewGuideConfig[viewType];
-            if (!config) return;
-
-            // 构建步骤HTML
-            let stepsHtml = '';
-            config.steps.forEach((step, index) => {
-                stepsHtml += `
-                    <div class="view-guide-step">
-                        <div class="step-number">${index + 1}</div>
-                        <div class="step-text">${step.text}</div>
-                    </div>
-                `;
-            });
-
-            // 设置提示框内容
-            document.getElementById('viewGuideTitle').innerHTML = `${config.icon} ${config.title}`;
-            document.getElementById('viewGuideSteps').innerHTML = stepsHtml;
-            document.getElementById('viewGuideCarName').textContent = currentCar.name;
-
-            // 保存当前要跳转的URL
-            window._pendingViewUrl = buildInteriorUrl(currentCar.id, document.getElementById('yearCarId').value.trim() || '', currentCar.color, currentCar.subColor);
-
-            // 显示提示框
-            document.getElementById('viewGuideModal').classList.add('show');
-        }
-
-        // 关闭视角提示框
-        function closeViewGuide() {
-            document.getElementById('viewGuideModal').classList.remove('show');
-        }
-
-        // 确认跳转并打开新窗口
-        function confirmViewJump() {
-            if (window._pendingViewUrl) {
-                window.open(window._pendingViewUrl, '_blank');
-                closeViewGuide();
-            }
+            const carId = document.getElementById('yearCarId').value.trim() || '';
+            const url = buildInteriorUrl(currentCar.id, carId, currentCar.color, currentCar.subColor);
+            window.open(url, '_blank');
         }
     </script>
-
-    <!-- 视角提示框 -->
-    <div class="view-guide-modal" id="viewGuideModal">
-        <div class="view-guide-content">
-            <div class="view-guide-title" id="viewGuideTitle">🪑 视角切换指南</div>
-            <div style="text-align: center; font-size: 14px; color: #666; margin-bottom: 20px;">
-                即将跳转到 <strong id="viewGuideCarName">-</strong> 的全景内饰
-            </div>
-            <div class="view-guide-steps" id="viewGuideSteps">
-                <!-- 动态生成步骤 -->
-            </div>
-            <div style="background: #fff3cd; border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #856404;">
-                💡 <strong>提示：</strong>不同车型的全景内饰界面可能略有差异，但基本操作方式相同
-            </div>
-            <div class="view-guide-buttons">
-                <button class="view-guide-btn secondary" onclick="closeViewGuide()">取消</button>
-                <button class="view-guide-btn primary" onclick="confirmViewJump()">🚀 知道了，跳转</button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
