@@ -1032,15 +1032,15 @@
         };
 
         // 跳转到指定视角（直接跳转，带 position 参数到达指定视角）
+        // 注意：不传颜色参数，避免干扰 position 的生效
         function goToViewDirect(viewType) {
             if (!currentCar) {
                 alert('请先选择车型');
                 return;
             }
 
-            const carId = document.getElementById('yearCarId').value.trim() || '';
             const position = viewPositionMap[viewType] || '';
-            const url = buildInteriorUrl(currentCar.id, carId, currentCar.color, currentCar.subColor, position);
+            const url = buildInteriorUrl(currentCar.id, '', '', '', position);
             window.open(url, '_blank');
         }
     </script>
