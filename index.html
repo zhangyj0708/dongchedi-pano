@@ -429,23 +429,23 @@
 
             <!-- 四个视角快捷跳转 - 直接跳转 -->
             <div style="margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #fff5f5, #ffe8e8); border-radius: 12px; border: 2px solid #ff6b6b;">
-                <div style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 15px;">🎬 快捷视角跳转（点击直接跳转）</div>
+                <div style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 15px;">🎬 快捷视角跳转（点击直接跳转对应视角）</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <button class="action-btn" onclick="goToViewDirect('rear_front')" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); color: white; padding: 15px 10px; font-size: 14px;">
                         🪑 第二排正视图
-                        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">看向正前方</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">✅ 直达第二排·看向正前方</div>
                     </button>
                     <button class="action-btn" onclick="goToViewDirect('rear_side')" style="background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%); color: white; padding: 15px 10px; font-size: 14px;">
                         🪑 第二排侧视图
-                        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">看向侧面</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">↪️ 进入后排后滑动旋转到侧面</div>
                     </button>
                     <button class="action-btn" onclick="goToViewDirect('driver')" style="background: linear-gradient(135deg, #00b894 0%, #00a381 100%); color: white; padding: 15px 10px; font-size: 14px;">
                         🚗 前排主驾视角
-                        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">驾驶员位置</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">✅ 直达主驾驶位</div>
                     </button>
                     <button class="action-btn" onclick="goToViewDirect('passenger')" style="background: linear-gradient(135deg, #0984e3 0%, #0770c7 100%); color: white; padding: 15px 10px; font-size: 14px;">
                         🚗 前排副驾视角
-                        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">副驾驶位置</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">✅ 直达副驾驶位</div>
                     </button>
                 </div>
             </div>
@@ -528,7 +528,7 @@
             <div class="tips-content">
                 <ul>
                     <li><strong>🔥 热门车型：</strong>点击标签一键跳转全景内饰</li>
-                    <li><strong>🎬 快捷视角：</strong>一键跳转全景内饰，支持第二排正视图、第二排侧视图、主驾视角、副驾视角</li>
+                    <li><strong>🎬 快捷视角：</strong>直接跳转到对应视角（第二排正视图、第二排侧视图、前排主驾、前排副驾），主驾/副驾一步到位，侧视图进入后排后滑动旋转即可</li>
                     <li><strong>🔗 粘贴链接：</strong>从懂车帝App分享全景内饰链接，粘贴到上方自动提取ID并跳转（推荐！适用车型不限）</li>
                     <li><strong>🔍 搜索功能：</strong>输入车型名称自动匹配</li>
                     <li><strong>🔧 手动输入：</strong>直接输入 series_id 跳转</li>
@@ -725,8 +725,8 @@
             }
         }
 
-        // 构建全景内饰URL（不传selected_car_id则显示最新款）
-        function buildInteriorUrl(seriesId, carId, color, subColor) {
+        // 构建全景内饰URL（支持视角参数）
+        function buildInteriorUrl(seriesId, carId, color, subColor, position) {
             let url = `https://m.dcdapp.com/motor/inapp/pano-new/inner.html?series_id=${seriesId}`;
             if (color) {
                 url += `&selected_color=${encodeURIComponent(color)}`;
@@ -736,6 +736,9 @@
             }
             if (carId) {
                 url += `&selected_car_id=${carId}`;
+            }
+            if (position) {
+                url += `&position=${position}`;
             }
             return url;
         }
@@ -1020,7 +1023,15 @@
             }
         }
 
-        // 跳转到指定视角（直接跳转，无提示框）
+        // 视角参数映射表（懂车帝全景内饰支持的 position 参数）
+        const viewPositionMap = {
+            rear_front: 'rear_vr',     // 第二排/后排
+            rear_side: 'rear_vr',      // 第二排/后排（侧视图需手动旋转）
+            driver: 'front_vr',        // 前排主驾
+            passenger: 'vice_drive_vr' // 前排副驾
+        };
+
+        // 跳转到指定视角（直接跳转，带 position 参数到达指定视角）
         function goToViewDirect(viewType) {
             if (!currentCar) {
                 alert('请先选择车型');
@@ -1028,7 +1039,8 @@
             }
 
             const carId = document.getElementById('yearCarId').value.trim() || '';
-            const url = buildInteriorUrl(currentCar.id, carId, currentCar.color, currentCar.subColor);
+            const position = viewPositionMap[viewType] || '';
+            const url = buildInteriorUrl(currentCar.id, carId, currentCar.color, currentCar.subColor, position);
             window.open(url, '_blank');
         }
     </script>
