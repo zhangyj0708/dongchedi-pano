@@ -502,6 +502,19 @@
             </div>
         </div>
 
+        <!-- 快速批量录入 -->
+        <div class="manual-section" style="background: linear-gradient(135deg, #fff8e1, #ffecb3); border: 2px solid #ffa000;">
+            <div class="manual-title">⚡ 快速批量录入（一行一个，ID + 空格 + 车型名）</div>
+            <div class="manual-form">
+                <div class="form-group">
+                    <label class="form-label">粘贴 series_id 和车型名称：</label>
+                    <textarea id="quickBatchData" class="form-input" rows="8" placeholder="格式：series_id 车型名称&#10;例如：&#10;4802 比亚迪秦PLUS&#10;4363 特斯拉Model Y&#10;5845 小鹏P7+&#10;6325 理想L6&#10;6187 小米SU7&#10;..."></textarea>
+                </div>
+                <button class="manual-btn" onclick="quickBatchImport()" style="background: linear-gradient(135deg, #ffa000, #ff8f00); font-size: 16px; padding: 15px;">⚡ 快速录入并保存</button>
+                <div id="quickBatchResult" style="margin-top: 15px; font-size: 14px; color: #333; display: none;"></div>
+            </div>
+        </div>
+
         <!-- 手动输入 -->
         <div class="manual-section">
             <div class="manual-title">🔧 手动输入ID</div>
@@ -1048,6 +1061,65 @@
                 history = [];
                 localStorage.removeItem('carHistory');
                 renderHistory();
+            }
+        }
+
+        // 快速批量录入（支持 "ID 名称" 格式，每行一个）
+        function quickBatchImport() {
+            const text = document.getElementById('quickBatchData').value.trim();
+            if (!text) {
+                alert('请粘贴车型数据');
+                return;
+            }
+
+            const lines = text.split('\n').map(s => s.trim()).filter(s => s);
+            let success = 0, fail = 0;
+            let results = [];
+
+            lines.forEach((line, i) => {
+                // 支持多种分隔符：空格、Tab、逗号、竖线
+                const parts = line.split(/[\t,| ]+/).filter(s => s);
+                if (parts.length >= 2) {
+                    const id = parts[0].replace(/[^0-9]/g, '');
+                    const name = parts.slice(1).join(' ').trim();
+                    if (id && name) {
+                        saveUserCar(name, id, '', '', '');
+                        success++;
+                        results.push(`✅ ${name} (series_id: ${id})`);
+                        return;
+                    }
+                }
+                // 尝试解析 "名称 ID" 格式（ID在最后）
+                const reversed = line.split(/[\t,| ]+/).filter(s => s);
+                const lastId = reversed[reversed.length - 1].replace(/[^0-9]/g, '');
+                const firstName = reversed.slice(0, -1).join(' ').trim();
+                if (lastId && firstName) {
+                    saveUserCar(firstName, lastId, '', '', '');
+                    success++;
+                    results.push(`✅ ${firstName} (series_id: ${lastId})`);
+                    return;
+                }
+                fail++;
+                results.push(`❌ 第${i + 1}行：无法解析，请使用"ID 名称"格式`);
+            });
+
+            // 刷新用户车型标签
+            renderUserCars();
+
+            // 显示结果
+            const resultDiv = document.getElementById('quickBatchResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>⚡ 录入完成：</strong>成功 ${success} 个，失败 ${fail} 个
+                    <div style="margin-top: 10px; font-size: 13px; color: #666; max-height: 200px; overflow-y: auto;">
+                        ${results.join('<br>')}
+                    </div>
+                </div>
+            `;
+
+            if (fail === 0) {
+                document.getElementById('quickBatchData').value = '';
             }
         }
 
