@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>懂车帝全景内饰跳转器 v2</title>
+    <title>懂车帝全景内饰跳转器 v3</title>
     <style>
         * {
             margin: 0;
@@ -378,6 +378,34 @@
             }
         }
 
+        /* 平台标签样式 */
+        .platform-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            background: #f0f0f0;
+            color: #999;
+        }
+        .platform-tab:hover {
+            transform: translateY(-1px);
+        }
+        .platform-tab.active {
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        /* 平台按钮色 */
+        .btn-review { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+        .btn-pics { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+
         /* Toast 轻提示动画 */
         @keyframes toastIn {
             from { opacity: 0; transform: translateX(-50%) translateY(20px); }
@@ -390,7 +418,7 @@
         <!-- 头部 -->
         <div class="header">
             <h1>🚗 懂车帝全景内饰跳转器</h1>
-            <p>输入车型，一键查看全景内饰</p>
+            <p>🔴 懂车帝 · 🏠 汽车之家 · 🚗 易车 | 多平台一键跳转</p>
         </div>
 
         <!-- 搜索区域 -->
@@ -432,10 +460,15 @@
                     <div class="car-series" id="carSeries">系列ID: -</div>
                 </div>
             </div>
-            <div class="action-buttons">
-                <button class="action-btn btn-interior" onclick="goToInterior()">🏠 查看全景内饰（最新款）</button>
-                <button class="action-btn btn-exterior" onclick="goToExterior()">🚙 查看外观</button>
-                <button class="action-btn btn-params" onclick="goToParams()">📊 查看参数配置</button>
+
+            <!-- 平台切换标签 -->
+            <div id="platformTabs" style="display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;">
+                <!-- 由JS动态渲染 -->
+            </div>
+
+            <!-- 动态跳转按钮 -->
+            <div class="action-buttons" id="platformActionButtons">
+                <!-- 由JS动态渲染 -->
             </div>
 
             <!-- 四个视角快捷跳转 - 直接跳转 -->
@@ -551,11 +584,13 @@
             <div class="tips-title">💡 使用说明</div>
             <div class="tips-content">
                 <ul>
-                    <li><strong>🔥 热门车型：</strong>点击标签一键跳转全景内饰</li>
-                    <li><strong>🎬 快捷视角：</strong>直接跳转到对应视角（第二排正视图、第二排侧视图、前排主驾、前排副驾），主驾/副驾一步到位，侧视图进入后排后滑动旋转即可</li>
-                    <li><strong>🔗 粘贴链接：</strong>从懂车帝App分享全景内饰链接，粘贴到上方自动提取ID并跳转（推荐！适用车型不限）</li>
+                    <li><strong>🌐 多平台切换：</strong>搜索结果上方可切换懂车帝/汽车之家/易车，按钮自动变为对应平台的跳转链接</li>
+                    <li><strong>🔥 热门车型：</strong>点击标签一键跳转</li>
+                    <li><strong>🎬 快捷视角：</strong>懂车帝专属，支持第二排、主驾、副驾一键直达</li>
+                    <li><strong>🔗 粘贴链接：</strong>从懂车帝App分享全景内饰链接，粘贴到上方自动提取ID并跳转</li>
                     <li><strong>🔍 搜索功能：</strong>输入车型名称自动匹配</li>
                     <li><strong>🔧 手动输入：</strong>直接输入 series_id 跳转</li>
+                    <li><strong>⚡ 快速批量录入：</strong>一行一个"ID 车型名"，批量保存到本地</li>
                     <li><strong>如何获取链接：</strong>
                         <ol>
                             <li>打开懂车帝App，搜索目标车型</li>
@@ -570,41 +605,101 @@
     </div>
 
     <script>
-        // 车型数据库（仅保留已验证的车型）
-        // 其他车型通过搜索跳转懂车帝，或手动输入ID（自动保存）
+        // ===== 平台配置 =====
+        const platforms = [
+            { id: 'dongchedi', name: '懂车帝', icon: '🔴', color: '#ff6b6b', bg: '#fff5f5' },
+            { id: 'autohome', name: '汽车之家', icon: '🏠', color: '#ffa000', bg: '#fff8e1' },
+            { id: 'yiche', name: '易车', icon: '🚗', color: '#00b894', bg: '#f0fff0' },
+        ];
+        let currentPlatform = 'dongchedi';
+
+        const platformUrls = {
+            dongchedi: {
+                interior: id => `https://m.dcdapp.com/motor/inapp/pano-new/inner.html?series_id=${id}`,
+                exterior: id => `https://www.dongchedi.com/auto/series/${id}`,
+                params: id => `https://www.dongchedi.com/auto/params-carIds-x-${id}`,
+                review: id => `https://www.dongchedi.com/auto/review-serie-${id}`,
+            },
+            autohome: {
+                exterior: (id, n) => id ? `https://www.autohome.com.cn/series/${id}/` : null,
+                params: (id, n) => id ? `https://www.autohome.com.cn/spec/${id}/` : null,
+                review: (id, n) => id ? `https://www.autohome.com.cn/koubei/${id}/` : null,
+                pics: (id, n) => id ? `https://www.autohome.com.cn/pic/${id}/` : null,
+            },
+            yiche: {
+                exterior: (id, n) => id ? `https://www.yiche.com/series/${id}/` : null,
+                params: (id, n) => id ? `https://www.yiche.com/param/${id}/` : null,
+                pics: (id, n) => id ? `https://www.yiche.com/pic/${id}/` : null,
+            },
+        };
+
+        const platformButtons = {
+            dongchedi: [
+                { key: 'interior', label: '全景内饰', emoji: '🏠', cls: 'btn-interior' },
+                { key: 'exterior', label: '外观', emoji: '🚙', cls: 'btn-exterior' },
+                { key: 'params', label: '参数配置', emoji: '📊', cls: 'btn-params' },
+                { key: 'review', label: '口碑', emoji: '💬', cls: 'btn-review' },
+            ],
+            autohome: [
+                { key: 'exterior', label: '车型首页', emoji: '🏠', cls: 'btn-exterior' },
+                { key: 'review', label: '口碑', emoji: '💬', cls: 'btn-review' },
+                { key: 'params', label: '参数配置', emoji: '📊', cls: 'btn-params' },
+                { key: 'pics', label: '图片', emoji: '🖼️', cls: 'btn-pics' },
+            ],
+            yiche: [
+                { key: 'exterior', label: '车型首页', emoji: '🏠', cls: 'btn-exterior' },
+                { key: 'params', label: '参数配置', emoji: '📊', cls: 'btn-params' },
+                { key: 'pics', label: '图片', emoji: '🖼️', cls: 'btn-pics' },
+            ],
+        };
+
+        const platformSearch = {
+            dongchedi: kw => `https://www.dongchedi.com/search?keyword=${encodeURIComponent(kw)}&type=1`,
+            autohome: kw => `https://www.autohome.com.cn/search?q=${encodeURIComponent(kw)}`,
+            yiche: kw => `https://www.yiche.com/search/?keyword=${encodeURIComponent(kw)}`,
+        };
+
+        function getPlatformId(car, pid) {
+            if (pid === 'dongchedi') return car.id || '';
+            if (pid === 'autohome') return car.autohomeId || '';
+            if (pid === 'yiche') return car.yicheId || '';
+            return '';
+        }
+
+        // ===== 车型数据库 =====
         const carDatabase = {
             // 小米
-            '小米SU7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE', hasVice: false },
-            'su7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE', hasVice: false },
+            '小米SU7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE', hasVice: false, autohomeId: '', yicheId: '' },
+            'su7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE', hasVice: false, autohomeId: '', yicheId: '' },
             // 特斯拉
-            '特斯拉Model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false },
-            'model3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false },
-            'model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false },
+            '特斯拉Model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
+            'model3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
+            'model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
             // 问界
-            '问界M7': { id: '5723', brand: '问界', emoji: '🚀', carId: '', hasVice: false },
+            '问界M7': { id: '5723', brand: '问界', emoji: '🚀', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
             // 宝马
-            '宝马3系': { id: '4538', brand: '宝马', emoji: '🏁', carId: '', hasVice: false },
-            '宝马iX3': { id: '4538', brand: '宝马', emoji: '🏁', carId: '', hasVice: false },
-            'ix3': { id: '4538', brand: '宝马', emoji: '🏁', carId: '', hasVice: false },
+            '宝马3系': { id: '4538', brand: '宝马', emoji: '🏁', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
+            '宝马iX3': { id: '4538', brand: '宝马', emoji: '🏁', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
+            'ix3': { id: '4538', brand: '宝马', emoji: '🏁', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
             // 奔驰
-            '奔驰C级': { id: '212', brand: '奔驰', emoji: '⭐', carId: '', hasVice: false },
+            '奔驰C级': { id: '212', brand: '奔驰', emoji: '⭐', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
             // 路特斯
-            '路特斯Emeya': { id: '9275', brand: '路特斯', emoji: '🏎️', carId: '', hasVice: true },
-            'emeya': { id: '9275', brand: '路特斯', emoji: '🏎️', carId: '', hasVice: true },
+            '路特斯Emeya': { id: '9275', brand: '路特斯', emoji: '🏎️', carId: '', hasVice: true, autohomeId: '', yicheId: '' },
+            'emeya': { id: '9275', brand: '路特斯', emoji: '🏎️', carId: '', hasVice: true, autohomeId: '', yicheId: '' },
             // 比亚迪
-            '比亚迪秦PLUS': { id: '4802', brand: '比亚迪', emoji: '🔋', carId: '', hasVice: false },
-            '秦PLUS': { id: '4802', brand: '比亚迪', emoji: '🔋', carId: '', hasVice: false },
-            'qinplus': { id: '4802', brand: '比亚迪', emoji: '🔋', carId: '', hasVice: false },
+            '比亚迪秦PLUS': { id: '4802', brand: '比亚迪', emoji: '🔋', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
+            '秦PLUS': { id: '4802', brand: '比亚迪', emoji: '🔋', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
+            'qinplus': { id: '4802', brand: '比亚迪', emoji: '🔋', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
             // 小鹏
-            '小鹏P7+': { id: '5845', brand: '小鹏', emoji: '🪽', carId: '', hasVice: false },
-            'p7+': { id: '5845', brand: '小鹏', emoji: '🪽', carId: '', hasVice: false },
+            '小鹏P7+': { id: '5845', brand: '小鹏', emoji: '🪽', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
+            'p7+': { id: '5845', brand: '小鹏', emoji: '🪽', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
             // 特斯拉
-            '特斯拉Model Y': { id: '4363', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false },
-            'model y': { id: '4363', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false },
-            'modely': { id: '4363', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false },
+            '特斯拉Model Y': { id: '4363', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
+            'model y': { id: '4363', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
+            'modely': { id: '4363', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
             // 理想
-            '理想L6': { id: '6325', brand: '理想', emoji: '🏠', carId: '', hasVice: false },
-            'l6': { id: '6325', brand: '理想', emoji: '🏠', carId: '', hasVice: false },
+            '理想L6': { id: '6325', brand: '理想', emoji: '🏠', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
+            'l6': { id: '6325', brand: '理想', emoji: '🏠', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
         };
 
         // 当前选中的车型
@@ -748,13 +843,88 @@
             document.getElementById('carName').textContent = name;
             document.getElementById('carSeries').textContent = `品牌: ${data.brand} | 系列ID: ${data.id}`;
 
-            // 预填已保存的配置ID
             document.getElementById('yearCarId').value = data.carId || '';
 
             document.getElementById('resultSection').classList.add('show');
 
-            // 添加到历史
+            // 渲染平台标签和按钮
+            renderPlatformTabs();
+            renderPlatformButtons();
+            // 重置为懂车帝
+            currentPlatform = 'dongchedi';
+            highlightCurrentTab();
+
             addToHistory(name, data.id);
+        }
+
+        // 渲染平台切换标签
+        function renderPlatformTabs() {
+            const container = document.getElementById('platformTabs');
+            container.innerHTML = '';
+            platforms.forEach(p => {
+                const tab = document.createElement('button');
+                tab.className = 'platform-tab' + (p.id === currentPlatform ? ' active' : '');
+                tab.dataset.platform = p.id;
+                tab.innerHTML = `${p.icon} ${p.name}`;
+                tab.style.cssText = p.id === currentPlatform
+                    ? `background:${p.color};color:#fff;border-color:${p.color};`
+                    : '';
+                tab.onclick = () => switchPlatform(p.id);
+                container.appendChild(tab);
+            });
+        }
+
+        // 高亮当前平台标签
+        function highlightCurrentTab() {
+            const tabs = document.querySelectorAll('#platformTabs .platform-tab');
+            tabs.forEach(tab => {
+                const pid = tab.dataset.platform;
+                const p = platforms.find(x => x.id === pid);
+                if (pid === currentPlatform) {
+                    tab.className = 'platform-tab active';
+                    tab.style.cssText = `background:${p.color};color:#fff;border-color:${p.color};`;
+                } else {
+                    tab.className = 'platform-tab';
+                    tab.style.cssText = '';
+                }
+            });
+        }
+
+        // 切换平台
+        function switchPlatform(pid) {
+            currentPlatform = pid;
+            highlightCurrentTab();
+            renderPlatformButtons();
+        }
+
+        // 渲染对应平台的跳转按钮
+        function renderPlatformButtons() {
+            const container = document.getElementById('platformActionButtons');
+            const btns = platformButtons[currentPlatform] || [];
+            const pid = getPlatformId(currentCar, currentPlatform);
+            container.innerHTML = '';
+            btns.forEach(b => {
+                const btn = document.createElement('button');
+                btn.className = `action-btn ${b.cls}`;
+                btn.textContent = `${b.emoji} ${b.label}`;
+                btn.onclick = () => {
+                    const url = buildPlatformUrl(currentPlatform, b.key, currentCar, currentCar.name);
+                    if (url) window.open(url, '_blank');
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // 构建平台跳转URL
+        function buildPlatformUrl(pid, type, car, carName) {
+            const id = getPlatformId(car, pid);
+            const builder = platformUrls[pid]?.[type];
+            if (builder) {
+                const url = builder(id, carName);
+                if (url) return url;
+            }
+            // 没有ID或没有构建器 → 搜索回退
+            return platformSearch[pid] ? platformSearch[pid](carName) : null;
         }
 
         // 选择热门车型
