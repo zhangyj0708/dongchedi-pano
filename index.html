@@ -621,10 +621,10 @@
                 review: id => `https://www.dongchedi.com/auto/review-serie-${id}`,
             },
             autohome: {
-                exterior: (id, n) => id ? `https://www.autohome.com.cn/series/${id}/` : null,
-                params: (id, n) => id ? `https://www.autohome.com.cn/spec/${id}/` : null,
-                review: (id, n) => id ? `https://www.autohome.com.cn/koubei/${id}/` : null,
-                pics: (id, n) => id ? `https://www.autohome.com.cn/pic/${id}/` : null,
+                exterior: id => id ? `https://www.autohome.com.cn/series/${id}/` : null,
+                params: id => id ? `https://www.autohome.com.cn/config/series/${id}.html` : null,
+                review: id => id ? `https://www.autohome.com.cn/koubei/${id}/` : null,
+                pics: id => id ? `https://www.autohome.com.cn/pic/${id}/` : null,
             },
             yiche: {
                 exterior: (id, n) => id ? `https://www.yiche.com/series/${id}/` : null,
@@ -669,8 +669,8 @@
         // ===== 车型数据库 =====
         const carDatabase = {
             // 小米
-            '小米SU7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE', hasVice: false, autohomeId: '', yicheId: '' },
-            'su7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE', hasVice: false, autohomeId: '', yicheId: '' },
+            '小米SU7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE', hasVice: false, autohomeId: '6962', yicheId: '' },
+            'su7': { id: '6187', brand: '小米汽车', emoji: '🏎️', carId: '255155', color: '#202228', subColor: '#0355AE', hasVice: false, autohomeId: '6962', yicheId: '' },
             // 特斯拉
             '特斯拉Model 3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
             'model3': { id: '3547', brand: '特斯拉', emoji: '⚡', carId: '', hasVice: false, autohomeId: '', yicheId: '' },
