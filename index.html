@@ -901,14 +901,15 @@
         function renderPlatformButtons() {
             const container = document.getElementById('platformActionButtons');
             const btns = platformButtons[currentPlatform] || [];
-            const pid = getPlatformId(currentCar, currentPlatform);
             container.innerHTML = '';
             btns.forEach(b => {
                 const btn = document.createElement('button');
                 btn.className = `action-btn ${b.cls}`;
                 btn.textContent = `${b.emoji} ${b.label}`;
+                // 预计算URL并显示在title上
+                const url = buildPlatformUrl(currentPlatform, b.key, currentCar, currentCar.name);
+                btn.title = url || '无可用链接';
                 btn.onclick = () => {
-                    const url = buildPlatformUrl(currentPlatform, b.key, currentCar, currentCar.name);
                     if (url) window.open(url, '_blank');
                 };
                 container.appendChild(btn);
