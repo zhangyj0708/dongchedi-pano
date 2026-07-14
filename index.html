@@ -405,6 +405,7 @@
         /* 平台按钮色 */
         .btn-review { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
         .btn-pics { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+        .btn-search { background: linear-gradient(135deg, #a8a8a8 0%, #808080 100%); color: white; }
 
         /* Toast 轻提示动画 */
         @keyframes toastIn {
@@ -621,10 +622,7 @@
                 review: id => `https://www.dongchedi.com/auto/review-serie-${id}`,
             },
             autohome: {
-                exterior: id => id ? `https://www.autohome.com.cn/series/${id}/` : null,
                 params: id => id ? `https://www.autohome.com.cn/config/series/${id}.html` : null,
-                review: id => id ? `https://www.autohome.com.cn/koubei/${id}/` : null,
-                pics: id => id ? `https://www.autohome.com.cn/pic/${id}/` : null,
             },
             yiche: {
                 exterior: (id, n) => id ? `https://www.yiche.com/series/${id}/` : null,
@@ -642,8 +640,7 @@
             ],
             autohome: [
                 { key: 'params', label: '参数配置', emoji: '📊', cls: 'btn-params' },
-                { key: 'review', label: '口碑', emoji: '💬', cls: 'btn-review' },
-                { key: 'pics', label: '图片', emoji: '🖼️', cls: 'btn-pics' },
+                { key: 'search', label: '搜索该车型', emoji: '🔍', cls: 'btn-search' },
             ],
             yiche: [
                 { key: 'exterior', label: '车型首页', emoji: '🏠', cls: 'btn-exterior' },
@@ -654,8 +651,8 @@
 
         const platformSearch = {
             dongchedi: kw => `https://www.dongchedi.com/search?keyword=${encodeURIComponent(kw)}&type=1`,
-            autohome: kw => `https://sou.autohome.com.cn/zonghe?q=${encodeURIComponent(kw)}`,
-            yiche: kw => `https://www.yiche.com/`,
+            autohome: () => 'https://www.autohome.com.cn/',
+            yiche: () => 'https://www.yiche.com/',
         };
 
         function getPlatformId(car, pid) {
@@ -917,6 +914,10 @@
 
         // 构建平台跳转URL
         function buildPlatformUrl(pid, type, car, carName) {
+            // 搜索类型直接跳转平台首页
+            if (type === 'search') {
+                return platformSearch[pid] ? platformSearch[pid](carName) : null;
+            }
             const id = getPlatformId(car, pid);
             const builder = platformUrls[pid]?.[type];
             if (builder) {
