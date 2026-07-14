@@ -611,6 +611,7 @@
             { id: 'dongchedi', name: '懂车帝', icon: '🔴', color: '#ff6b6b', bg: '#fff5f5' },
             { id: 'autohome', name: '汽车之家', icon: '🏠', color: '#ffa000', bg: '#fff8e1' },
             { id: 'yiche', name: '易车', icon: '🚗', color: '#00b894', bg: '#f0fff0' },
+            { id: 'usnews', name: 'US News', icon: '🇺🇸', color: '#0057b7', bg: '#f0f5ff' },
         ];
         let currentPlatform = 'dongchedi';
 
@@ -628,6 +629,20 @@
                 exterior: (id, n) => id ? `https://www.yiche.com/series/${id}/` : null,
                 params: (id, n) => id ? `https://www.yiche.com/param/${id}/` : null,
                 pics: (id, n) => id ? `https://www.yiche.com/pic/${id}/` : null,
+            },
+            usnews: {
+                exterior: (id, n, car) => car?.usnewsBrand && car?.usnewsModel
+                    ? `https://cars.usnews.com/cars-trucks/${car.usnewsBrand}/${car.usnewsModel}`
+                    : null,
+                params: (id, n, car) => car?.usnewsBrand && car?.usnewsModel
+                    ? `https://cars.usnews.com/cars-trucks/${car.usnewsBrand}/${car.usnewsModel}/specs`
+                    : null,
+                pics: (id, n, car) => car?.usnewsBrand && car?.usnewsModel
+                    ? `https://cars.usnews.com/cars-trucks/${car.usnewsBrand}/${car.usnewsModel}/photos-interior`
+                    : null,
+                review: (id, n, car) => car?.usnewsBrand && car?.usnewsModel
+                    ? `https://cars.usnews.com/cars-trucks/${car.usnewsBrand}/${car.usnewsModel}/reliability`
+                    : null,
             },
         };
 
@@ -647,12 +662,19 @@
                 { key: 'params', label: '参数配置', emoji: '📊', cls: 'btn-params' },
                 { key: 'pics', label: '图片', emoji: '🖼️', cls: 'btn-pics' },
             ],
+            usnews: [
+                { key: 'exterior', label: '车型首页', emoji: '🇺🇸', cls: 'btn-exterior' },
+                { key: 'params', label: '规格配置', emoji: '📊', cls: 'btn-params' },
+                { key: 'pics', label: '内饰图片', emoji: '🖼️', cls: 'btn-pics' },
+                { key: 'review', label: '可靠性评价', emoji: '⭐', cls: 'btn-review' },
+            ],
         };
 
         const platformSearch = {
             dongchedi: kw => `https://www.dongchedi.com/search?keyword=${encodeURIComponent(kw)}&type=1`,
             autohome: () => 'https://www.autohome.com.cn/',
             yiche: () => 'https://www.yiche.com/',
+            usnews: () => 'https://cars.usnews.com/cars-trucks',
         };
 
         function getPlatformId(car, pid) {
@@ -921,7 +943,8 @@
             const id = getPlatformId(car, pid);
             const builder = platformUrls[pid]?.[type];
             if (builder) {
-                const url = builder(id, carName);
+                // 传car对象给builder，方便US News等平台使用品牌/模型名
+                const url = builder(id, carName, car);
                 if (url) return url;
             }
             // 没有ID或没有构建器 → 搜索回退
