@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汽车内饰工艺 · 筛选与效果展示</title>
+    <style>
+        /* ===== Reset & Base ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f5f7fa;
+            color: #1a1a2e;
+            min-height: 100vh;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            padding: 48px 32px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.03) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .header h1 { font-size: 36px; font-weight: 700; letter-spacing: 2px; position: relative; z-index: 1; }
+        .header p { font-size: 16px; opacity: 0.7; margin-top: 10px; position: relative; z-index: 1; }
+
+        .header-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 4px 16px;
+            font-size: 12px;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            position: relative; z-index: 1;
+        }
+
+        /* ===== Stats Bar ===== */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            padding: 20px 32px;
+            background: #fff;
+            border-bottom: 1px solid #e8ecf1;
+        }
+        .stats-item { text-align: center; }
+        .stats-item .num { font-size: 28px; font-weight: 700; color: #0f3460; }
+        .stats-item .label { font-size: 13px; color: #888; margin-top: 2px; }
+
+        /* ===== Filter Bar ===== */
+        .filter-bar {
+            background: #fff;
+            padding: 20px 32px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 24px;
+            border-bottom: 1px solid #e8ecf1;
+        }
+        .filter-group { display: flex; align-items: center; gap: 8px; }
+        .filter-group label { font-size: 13px; color: #666; font-weight: 500; white-space: nowrap; }
+        .filter-btn {
+            padding: 6px 16px;
+            border-radius: 18px;
+            border: 1.5px solid #d0d5dd;
+            background: #fff;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover { border-color: #0f3460; color: #0f3460; }
+        .filter-btn.active {
+            background: #0f3460;
+            color: #fff;
+            border-color: #0f3460;
+        }
+        .filter-btn.active-all {
+            background: #1a1a2e;
+            color: #fff;
+            border-color: #1a1a2e;
+        }
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 16px 8px 36px;
+            border: 1.5px solid #d0d5dd;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+            background: #f9fafb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 12px center no-repeat;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: #0f3460; background-color: #fff; }
+
+        .filter-reset {
+            padding: 6px 16px;
+            border-radius: 18px;
+            border: 1.5px dashed #ccc;
+            background: transparent;
+            font-size: 13px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-reset:hover { border-color: #e74c3c; color: #e74c3c; }
+
+        /* ===== Toggle View ===== */
+        .view-toggle {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 3px;
+        }
+        .view-toggle button {
+            width: 32px; height: 32px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .view-toggle button.active { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        /* ===== Grid ===== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 32px 64px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+            transition: all 0.3s;
+        }
+        .grid.list-view {
+            grid-template-columns: 1fr;
+        }
+
+        /* ===== Card ===== */
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            transition: transform 0.25s, box-shadow 0.25s, opacity 0.3s;
+            cursor: default;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+        }
+        .card.hidden { display: none; }
+
+        /* Preview area */
+        .card-preview {
+            height: 180px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-preview .pattern-bg {
+            position: absolute;
+            inset: 0;
+            opacity: 0.9;
+        }
+
+        /* Pattern 1: 注塑 */
+        .pattern-injection .pattern-bg {
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6274 50%, #2c3e50 100%);
+        }
+        .pattern-injection .pattern-overlay {
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.03) 3px, rgba(255,255,255,0.03) 4px);
+        }
+
+        /* Pattern 2: 搪塑 */
+        .pattern-slush .pattern-bg {
+            background: linear-gradient(180deg, #8B7355 0%, #c4a97d 40%, #d4b98a 60%, #8B7355 100%);
+        }
+        .pattern-slush .pattern-overlay {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 30% 40%, rgba(255,255,255,0.15) 0%, transparent 60%);
+        }
+
+        /* Pattern 3: 包覆 */
+        .pattern-wrap .pattern-bg {
+            background: linear-gradient(135deg, #5c3d2e 0%, #8B5E3C 30%, #a0704e 50%, #8B5E3C 70%, #5c3d2e 100%);
+        }
+        .pattern-wrap .pattern-overlay {
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 3px);
+        }
+
+        /* Pattern 4: 发泡 */
+        .pattern-foam .pattern-bg {
+            background: radial-gradient(circle at 50% 50%, #e8dccd 0%, #d4c4a8 50%, #bfa88a 100%);
+        }
+        .pattern-foam .pattern-overlay {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.5) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(255,255,255,0.3) 0%, transparent 35%),
+                        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, transparent 50%);
+        }
+
+        /* Pattern 5: 喷涂 */
+        .pattern-paint .pattern-bg {
+            background: linear-gradient(135deg, #1a1a2e 0%, #e94560 50%, #1a1a2e 100%);
+        }
+        .pattern-paint .pattern-overlay {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 40% 30%, rgba(255,255,255,0.2) 0%, transparent 50%);
+        }
+
+        /* Pattern 6: 水转印 */
+        .pattern-water .pattern-bg {
+            background: conic-gradient(from 0deg, #1a5276, #2e86c1, #85c1e9, #2e86c1, #1a5276, #1a5276);
+        }
+        .pattern-water .pattern-overlay {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 60% 40%, rgba(255,255,255,0.25) 0%, transparent 40%),
+                        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15) 0%, transparent 30%);
+        }
+
+        /* Pattern 7: IMD/INS */
+        .pattern-imd .pattern-bg {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        }
+        .pattern-imd .pattern-overlay {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(255,215,0,0.08) 0%, transparent 50%);
+        }
+        .pattern-imd .pattern-shine {
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, transparent 40%, rgba(255,215,0,0.1) 45%, transparent 50%, rgba(255,215,0,0.05) 55%, transparent 60%);
+        }
+
+        /* Pattern 8: 真木 */
+        .pattern-wood .pattern-bg {
+            background: linear-gradient(90deg, #8B6914 0%, #c49a3c 20%, #d4a84a 30%, #b8860b 50%, #d4a84a 70%, #c49a3c 80%, #8B6914 100%);
+        }
+        .pattern-wood .pattern-overlay {
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(92deg, transparent, transparent 8px, rgba(0,0,0,0.06) 8px, rgba(0,0,0,0.06) 9px);
+        }
+
+        /* Pattern 9: 真铝 */
+        .pattern-metal .pattern-bg {
+            background: linear-gradient(135deg, #a8b8c8 0%, #d0d8e0 30%, #e8ecf0 50%, #d0d8e0 70%, #a8b8c8 100%);
+        }
+        .pattern-metal .pattern-overlay {
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.03) 1px, rgba(0,0,0,0.03) 2px);
+        }
+
+        /* Pattern 10: 激光雕刻 */
+        .pattern-laser .pattern-bg {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 40%, #3d3d5c 60%, #1a1a2e 100%);
+        }
+        .pattern-laser .pattern-overlay {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 60%);
+        }
+
+        /* Pattern 11: 电镀 */
+        .pattern-chrome .pattern-bg {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 30%, #f8f8f8 50%, #e0e0e0 70%, #b0b0b0 100%);
+        }
+        .pattern-chrome .pattern-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, transparent 30%, rgba(255,255,255,0.4) 35%, transparent 40%, transparent 60%, rgba(255,255,255,0.2) 65%, transparent 70%);
+        }
+
+        /* Pattern 12: 3D打印 */
+        .pattern-3dp .pattern-bg {
+            background: linear-gradient(135deg, #e74c3c 0%, #f39c12 25%, #2ecc71 50%, #3498db 75%, #9b59b6 100%);
+        }
+        .pattern-3dp .pattern-overlay {
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.08) 3px, rgba(255,255,255,0.08) 4px);
+        }
+
+        /* Pattern 13: 植绒 */
+        .pattern-flock .pattern-bg {
+            background: linear-gradient(180deg, #2d5a3d 0%, #3d7a5a 40%, #4a8a6a 60%, #3d7a5a 100%);
+        }
+        .pattern-flock .pattern-overlay {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 40%);
+        }
+
+        /* Pattern 14: 镭雕透光 */
+        .pattern-lit .pattern-bg {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%);
+        }
+        .pattern-lit .pattern-overlay {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(100,200,255,0.15) 0%, transparent 50%);
+        }
+
+        /* Pattern 15: 模内注塑 */
+        .pattern-insert .pattern-bg {
+            background: linear-gradient(135deg, #34495e 0%, #5d6d7e 30%, #7f8c8d 60%, #34495e 100%);
+        }
+        .pattern-insert .pattern-overlay {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(0,150,136,0.12) 0%, transparent 50%);
+        }
+
+        /* Pattern label */
+        .card-preview .process-label {
+            position: relative;
+            z-index: 2;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(8px);
+            padding: 6px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.15);
+            letter-spacing: 1px;
+        }
+
+        /* Card body */
+        .card-body { padding: 20px; }
+        .card-body h3 { font-size: 18px; margin-bottom: 6px; }
+        .card-body .subtitle { font-size: 13px; color: #888; margin-bottom: 12px; }
+        .card-body .desc { font-size: 14px; line-height: 1.6; color: #444; margin-bottom: 14px; }
+
+        .tag-group { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+        .tag {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        .tag-cost-低 { background: #e8f5e9; color: #2e7d32; }
+        .tag-cost-中 { background: #fff3e0; color: #e65100; }
+        .tag-cost-高 { background: #fce4ec; color: #c62828; }
+        .tag-apply { background: #e3f2fd; color: #1565c0; }
+        .tag-material { background: #f3e5f5; color: #7b1fa2; }
+        .tag-category { background: #e0f2f1; color: #00695c; }
+
+        .card-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+            border-top: 1px solid #f0f0f0;
+            padding-top: 12px;
+        }
+        .card-meta .meta-item { display: flex; gap: 4px; }
+        .card-meta .meta-label { color: #999; }
+        .card-meta .meta-val { color: #333; font-weight: 500; }
+
+        .card-pros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .card-pros .pro {
+            font-size: 11px;
+            background: #f0fdf4;
+            color: #15803d;
+            padding: 2px 10px;
+            border-radius: 10px;
+        }
+        .card-pros .con {
+            font-size: 11px;
+            background: #fef2f2;
+            color: #b91c1c;
+            padding: 2px 10px;
+            border-radius: 10px;
+        }
+
+        /* ===== Empty State ===== */
+        .empty-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+        .empty-state.show { display: flex; }
+        .empty-state .icon { font-size: 48px; opacity: 0.3; margin-bottom: 16px; }
+        .empty-state h3 { font-size: 18px; color: #555; margin-bottom: 8px; }
+        .empty-state p { font-size: 14px; color: #999; }
+
+        /* ===== Detail Modal ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: #fff;
+            border-radius: 20px;
+            max-width: 720px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal-preview { height: 200px; position: relative; }
+        .modal-body { padding: 28px; }
+        .modal-body h2 { font-size: 24px; margin-bottom: 4px; }
+        .modal-body .modal-sub { color: #888; font-size: 14px; margin-bottom: 16px; }
+        .modal-close {
+            position: absolute;
+            top: 16px; right: 16px;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.4);
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            z-index: 10;
+        }
+        .modal-close:hover { background: rgba(0,0,0,0.6); }
+        .modal-section { margin-bottom: 20px; }
+        .modal-section h4 { font-size: 14px; color: #999; font-weight: 600; margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
+        .modal-section p { font-size: 14px; line-height: 1.7; color: #444; }
+        .modal-compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .modal-compare .box {
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .modal-compare .box.pros { background: #f0fdf4; color: #15803d; }
+        .modal-compare .box.cons { background: #fef2f2; color: #b91c1c; }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .header { padding: 32px 20px 28px; }
+            .header h1 { font-size: 24px; }
+            .stats-bar { gap: 24px; flex-wrap: wrap; }
+            .filter-bar { padding: 16px 20px; }
+            .grid { grid-template-columns: 1fr; gap: 16px; }
+            .container { padding: 16px; }
+            .modal-compare { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<div class="header">
+    <div class="header-badge">🚗 汽车内饰工程</div>
+    <h1>内饰工艺筛选与效果展示</h1>
+    <p>按工艺类别 · 适用部位 · 成本等级 · 材料类型 快速筛选对比</p>
+</div>
+
+<!-- ===== Stats ===== -->
+<div class="stats-bar" id="statsBar">
+    <div class="stats-item"><div class="num" id="statTotal">15</div><div class="label">工艺总数</div></div>
+    <div class="stats-item"><div class="num" id="statShowing">15</div><div class="label">当前筛选</div></div>
+    <div class="stats-item"><div class="num" id="statCategory">4</div><div class="label">工艺类别</div></div>
+</div>
+
+<!-- ===== Filter Bar ===== -->
+<div class="filter-bar">
+    <!-- Category -->
+    <div class="filter-group">
+        <label>工艺类别</label>
+        <button class="filter-btn active active-all" data-group="category" data-value="all">全部</button>
+        <button class="filter-btn" data-group="category" data-value="成型">成型</button>
+        <button class="filter-btn" data-group="category" data-value="表面处理">表面处理</button>
+        <button class="filter-btn" data-group="category" data-value="装饰">装饰</button>
+        <button class="filter-btn" data-group="category" data-value="先进制造">先进制造</button>
+    </div>
+
+    <!-- Application -->
+    <div class="filter-group">
+        <label>适用部位</label>
+        <button class="filter-btn active active-all" data-group="apply" data-value="all">全部</button>
+        <button class="filter-btn" data-group="apply" data-value="仪表板">仪表板</button>
+        <button class="filter-btn" data-group="apply" data-value="门板">门板</button>
+        <button class="filter-btn" data-group="apply" data-value="立柱">立柱</button>
+        <button class="filter-btn" data-group="apply" data-value="副仪表板">副仪表板</button>
+    </div>
+
+    <!-- Cost -->
+    <div class="filter-group">
+        <label>成本等级</label>
+        <button class="filter-btn active active-all" data-group="cost" data-value="all">全部</button>
+        <button class="filter-btn" data-group="cost" data-value="低">低 ●</button>
+        <button class="filter-btn" data-group="cost" data-value="中">中 ●●</button>
+        <button class="filter-btn" data-group="cost" data-value="高">高 ●●●</button>
+    </div>
+
+    <!-- Search -->
+    <input class="search-input" id="searchInput" type="text" placeholder="搜索工艺名称或关键词..." />
+
+    <!-- View toggle -->
+    <div class="view-toggle">
+        <button id="viewGrid" class="active" title="卡片视图">▦</button>
+        <button id="viewList" title="列表视图">☰</button>
+    </div>
+
+    <button class="filter-reset" id="resetFilters">↺ 重置</button>
+</div>
+
+<!-- ===== Grid ===== -->
+<div class="container">
+    <div class="grid" id="cardGrid">
+        <!-- Cards injected by JS -->
+    </div>
+    <div class="empty-state" id="emptyState">
+        <div class="icon">🔍</div>
+        <h3>没有匹配的工艺</h3>
+        <p>试试调整筛选条件或搜索关键词</p>
+    </div>
+</div>
+
+<!-- ===== Modal ===== -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modalContent">
+        <div class="modal-preview" id="modalPreview">
+            <button class="modal-close" id="modalClose">✕</button>
+            <div class="process-label" style="position:absolute;bottom:20px;left:20px;z-index:2;font-size:16px;font-weight:600;color:#fff;background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);padding:6px 18px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);" id="modalProcessLabel"></div>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+// ===== Data =====
+const PROCESSES = [
+    {
+        id: 'injection',
+        name: '注塑成型',
+        category: '成型',
+        cost: '低',
+        apply: ['仪表板', '门板', '立柱', '副仪表板'],
+        material: ['PP', 'ABS', 'PC/ABS', 'PA'],
+        pattern: 'pattern-injection',
+        subtitle: 'Injection Molding',
+        desc: '通过注塑机将熔融塑料注入模具型腔冷却成型，是汽车内饰应用最广泛的成型工艺。适用于结构件和内装件的大批量生产。',
+        pros: ['效率高', '成本低', '精度好', '大批量稳定'],
+        cons: ['模具投资大', '表面质感有限', '尺寸受注塑机限制'],
+        detail: '注塑成型是汽车内饰件最核心的制造工艺，占内饰塑料件总产量的 70% 以上。典型的应用包括仪表板骨架、门板基板、立柱饰板、储物盒等。模具结构可分为两板模、三板模、热流道系统等。常用材料包括 PP（聚丙烯）、ABS（丙烯腈-丁二烯-苯乙烯共聚物）、PC/ABS 合金等。',
+        stiffness: '高',
+        surface: '中等',
+        cycle: '30-90s',
+        tooling: '50-500万',
+        carType: 'A/B/C/D/SUV'
+    },
+    {
+        id: 'slush',
+        name: '搪塑成型',
+        category: '成型',
+        cost: '高',
+        apply: ['仪表板'],
+        material: ['PVC', 'TPU'],
+        pattern: 'pattern-slush',
+        subtitle: 'Slush Molding',
+        desc: '将粉状材料加热熔融后附着在模具表面形成皮纹层，广泛用于仪表板蒙皮。可获得逼真的皮质触感和纹理效果。',
+        pros: ['皮质触感好', '皮纹可调', '无分模线'],
+        cons: ['设备昂贵', '周期长', '材料利用率低'],
+        detail: '搪塑成型是仪表板蒙皮领域的高端工艺。将 PVC 粉末加热后通过旋转模具使熔融材料均匀附着在模具内表面，冷却后得到无缝蒙皮。相比阳模真空成型，搪塑产品表面无分模线，纹理立体感更强，触感更接近真皮。但设备投资大（单台约 500-1000 万），生产节拍长（约 3-5 分钟/件），主要用于中高端车型。',
+        stiffness: '软质',
+        surface: '优异',
+        cycle: '3-5min',
+        tooling: '500-1000万',
+        carType: 'B/C/D/SUV'
+    },
+    {
+        id: 'wrap',
+        name: '包覆工艺',
+        category: '表面处理',
+        cost: '高',
+        apply: ['仪表板', '门板', '副仪表板'],
+        material: ['真皮', '人造革', '织物', 'Alcantara'],
+        pattern: 'pattern-wrap',
+        subtitle: 'Wrapping / Skinning',
+        desc: '将皮革、织物或 Alcantara 等面料通过包覆贴合到基材表面，提升触感和豪华感。是内饰豪华感的关键工艺。',
+        pros: ['豪华感强', '触感好', '材料选择多'],
+        cons: ['人工成本高', '效率低', '一致性较差'],
+        detail: '包覆工艺是将面料（真皮、人造革、Alcantara 等）通过胶粘或卡接方式贴合到注塑基材上，使内饰件获得柔软触感和高级视觉质感。工艺流程包括：裁切 → 刷胶 → 贴合 → 抚平 → 包边 → 定型。包覆质量取决于工人的操作熟练度，因此人工成本占比高。近年来自动化包覆设备（如机械臂包覆）逐渐普及，但复杂曲面仍依赖手工。',
+        stiffness: '软质',
+        surface: '优异',
+        cycle: '5-30min',
+        tooling: '50-200万',
+        carType: 'B/C/D/SUV'
+    },
+    {
+        id: 'foam',
+        name: '发泡成型',
+        category: '成型',
+        cost: '中',
+        apply: ['仪表板', '门板', '座椅'],
+        material: ['PU', 'PP发泡'],
+        pattern: 'pattern-foam',
+        subtitle: 'Foaming',
+        desc: '在基材与表皮之间注入聚氨酯（PU）发泡材料，形成柔软的缓冲层，提升触感和碰撞安全性。',
+        pros: ['柔软触感好', '吸能性佳', '隔音降噪'],
+        cons: ['工艺控制难', '周期长', '环保要求高'],
+        detail: '发泡成型常用于仪表板、门板上装饰板等区域，在硬质基材和表皮之间注入 PU 发泡料，经过化学反应膨胀形成缓冲层。发泡层的密度和厚度直接影响触感（通常 5-15mm 厚，密度 0.15-0.3g/cm³）。发泡工艺需要精确控制温度、注射量、发泡时间，否则容易出现空洞、密度不均等问题。近年来环保法规趋严，对发泡材料的 VOC 排放提出了更高要求。',
+        stiffness: '软质',
+        surface: '良好',
+        cycle: '2-8min',
+        tooling: '200-500万',
+        carType: 'B/C/D/SUV'
+    },
+    {
+        id: 'paint',
+        name: '喷涂工艺',
+        category: '表面处理',
+        cost: '中',
+        apply: ['仪表板', '门板', '立柱', '副仪表板'],
+        material: ['PU漆', 'UV漆', '水性漆'],
+        pattern: 'pattern-paint',
+        subtitle: 'Spray Painting',
+        desc: '通过喷涂设备将涂料均匀覆盖在零件表面，实现高光泽、哑光或特殊颜色效果。可实现高光泽钢琴黑和特殊颜色效果。',
+        pros: ['颜色丰富', '光泽可调', '装饰性好'],
+        cons: ['VOC排放', '良率波动', '耐刮擦'],
+        detail: '喷涂工艺是内饰件表面装饰的重要手段。通过喷涂聚氨酯（PU）漆或 UV 固化漆，可以使塑料件获得高光泽（钢琴黑）、哑光、金属闪光等效果。喷涂工艺包括：底漆 → 色漆 → 清漆（2K 或 1K 体系）。UV 固化漆因固化速度快（秒级）、硬度高、耐刮擦性好，在中高端车型上应用广泛。但喷涂工艺的 VOC 排放受环保法规严格限制，水性漆替代溶剂型漆是主要趋势。',
+        stiffness: 'N/A',
+        surface: '优异',
+        cycle: '1-5min',
+        tooling: '50-200万',
+        carType: 'A/B/C/D/SUV'
+    },
+    {
+        id: 'water',
+        name: '水转印',
+        category: '装饰',
+        cost: '低',
+        apply: ['立柱', '副仪表板', '门板'],
+        material: ['ABS', 'PC', 'PA'],
+        pattern: 'pattern-water',
+        subtitle: 'Water Transfer Printing',
+        desc: '利用水压将带有图案的薄膜转移到零件表面，可模拟木纹、碳纤维纹、金属拉丝等效果，成本极低。',
+        pros: ['成本低', '图案丰富', '适用形状广'],
+        cons: ['耐久性差', 'UV老化', '边角处理差'],
+        detail: '水转印是一种成本低廉的表面装饰工艺，利用水压将印刷有图案的薄膜转移到三维零件表面。工艺流程：底涂 → 薄膜活化 → 水转印 → 清洗 → 干燥 → 清漆保护。可以模拟木纹、碳纤维纹、迷彩、金属拉丝等效果。但薄膜的耐久性（耐刮擦、耐 UV 老化）较差，且边角部位容易出现起泡或脱落，因此主要用于低端车型或非触控区域（如立柱饰板、储物盒盖板等）。',
+        stiffness: 'N/A',
+        surface: '中等',
+        cycle: '2-5min',
+        tooling: '10-50万',
+        carType: 'A/B'
+    },
+    {
+        id: 'imd',
+        name: 'IMD / INS',
+        category: '装饰',
+        cost: '中',
+        apply: ['立柱', '副仪表板', '门板'],
+        material: ['PC', 'PET', 'PMMA'],
+        pattern: 'pattern-imd',
+        subtitle: 'In-Mold Decoration',
+        desc: '将印刷有图案的薄膜放入模具中，与注塑材料一体成型，图案位于产品表面下层，耐磨耐刮。',
+        pros: ['耐磨性好', '图案不脱落', '可做高光'],
+        cons: ['模具复杂', '薄膜成本高', '颜色受限'],
+        detail: 'IMD（In-Mold Decoration）/ INS（In-Mold Surfacing）是将印刷薄膜放入注塑模具中，与注塑基材一体成型的技术。薄膜位于产品表面下 0.1-0.3mm，因此图案不会因摩擦而脱落。INS 相比 IMD 支持更复杂的 3D 曲面。该工艺可以做出高光黑、木纹、碳纤维、金属拉丝等效果，且耐磨性远优于水转印。广泛应用于中高端车型的立柱饰板、副仪表板装饰条、出风口面板等。',
+        stiffness: 'N/A',
+        surface: '良好',
+        cycle: '40-90s',
+        tooling: '100-400万',
+        carType: 'B/C/D/SUV'
+    },
+    {
+        id: 'wood',
+        name: '真木饰板',
+        category: '装饰',
+        cost: '高',
+        apply: ['门板', '副仪表板'],
+        material: ['实木', '木皮'],
+        pattern: 'pattern-wood',
+        subtitle: 'Real Wood Trim',
+        desc: '采用真实木皮加工的内饰装饰件，经过切片、压制、喷涂等工序，保留天然木材的纹理和质感。',
+        pros: ['天然质感', '独一无二', '豪华感强'],
+        cons: ['成本极高', '环保争议', '一致性差'],
+        detail: '真木饰板是内饰豪华感的顶级表达。工艺过程：将天然木皮（胡桃木、枫木、桉木等）切片至 0.3-0.6mm 厚度，贴合在基材（铝板或塑料）上，再经过多道清漆喷涂和抛光，最终呈现温润的木质触感和光泽。每片木皮的纹理都是独一无二的。真木饰板工艺复杂，良率低，成本极高（单件 500-2000 元），主要用于豪华 D 级车和高端定制。环保方面，FSC 认证木材逐渐成为主流。',
+        stiffness: '硬质',
+        surface: '优异',
+        cycle: '3-7天',
+        tooling: '100-300万',
+        carType: 'D/豪华SUV'
+    },
+    {
+        id: 'metal',
+        name: '真铝饰板',
+        category: '装饰',
+        cost: '高',
+        apply: ['门板', '副仪表板'],
+        material: ['铝合金', '不锈钢'],
+        pattern: 'pattern-metal',
+        subtitle: 'Real Metal Trim',
+        desc: '采用铝合金或不锈钢加工的内饰装饰件，通过拉丝、喷砂、阳极氧化等工艺获得金属质感。',
+        pros: ['金属质感', '轻量化', '耐刮擦'],
+        cons: ['成本高', '加工难', '指纹问题'],
+        detail: '真铝饰板是轻量化与豪华感的结合。使用 0.3-0.8mm 铝合金板，经过冲压成型 → 拉丝/喷砂 → 阳极氧化 → CNC 精加工等工序，获得独特的金属拉丝或喷砂纹理。阳极氧化层能提供良好的耐腐蚀性和颜色选择（银、黑、金、蓝等）。真铝饰板比塑料电镀件轻 40-50%，且质感远优于仿制品。但成本高（单件 300-800 元），且表面容易留下指纹，需要做防指纹涂层处理。',
+        stiffness: '硬质',
+        surface: '优异',
+        cycle: '2-5天',
+        tooling: '100-500万',
+        carType: 'C/D/豪华SUV'
+    },
+    {
+        id: 'laser',
+        name: '激光雕刻',
+        category: '表面处理',
+        cost: '中',
+        apply: ['立柱', '副仪表板', '门板'],
+        material: ['PC', 'ABS', 'PMMA', '金属'],
+        pattern: 'pattern-laser',
+        subtitle: 'Laser Engraving',
+        desc: '利用激光束在零件表面精确雕刻图案、文字或纹理，可实现高精度定制化装饰效果。',
+        pros: ['精度高', '非接触', '图案灵活', '无模具'],
+        cons: ['效率较低', '批量成本高', '颜色单一'],
+        detail: '激光雕刻是一种非接触式加工工艺，利用高能激光束在材料表面烧蚀出精密图案或纹理。在内饰中用于：品牌 LOGO 雕刻、纹理装饰、氛围灯导光纹路、功能性标记等。激光雕刻无需模具，图案变更灵活，适合小批量定制和个性化配置。但加工速度较慢（单件约 30-120 秒），大批量生产成本高于注塑成型。CO₂ 激光器和光纤激光器是主流选择。',
+        stiffness: 'N/A',
+        surface: '良好',
+        cycle: '30-120s',
+        tooling: '无',
+        carType: 'A/B/C/D/SUV'
+    },
+    {
+        id: 'chrome',
+        name: '电镀工艺',
+        category: '表面处理',
+        cost: '中',
+        apply: ['门板', '副仪表板', '出风口'],
+        material: ['ABS', 'PC/ABS'],
+        pattern: 'pattern-chrome',
+        subtitle: 'Electroplating / Chrome',
+        desc: '通过电化学方法在塑料表面沉积金属层，获得镜面光泽的金属效果。常用于装饰亮条、出风口等。',
+        pros: ['镜面光泽', '装饰性强', '耐磨'],
+        cons: ['环保争议', '六价铬受限', '耐候性'],
+        detail: '塑料电镀工艺使 ABS 等塑料件获得金属般的镜面光泽。工艺流程：化学粗化 → 活化 → 化学镀镍 → 电镀铜 → 电镀镍 → 电镀铬。六价铬镀液因环保问题受到 REACH 法规严格限制，三价铬镀液逐渐成为替代方案。电镀件的光泽度可达 90 GU 以上，广泛用于出风口拨钮、门把手装饰条、换挡面板边框等。但镀层在高温高湿环境下可能出现起泡或剥落，需要严格控制注塑和电镀工艺参数。',
+        stiffness: '硬质',
+        surface: '镜面',
+        cycle: '2-6h',
+        tooling: '50-200万',
+        carType: 'A/B/C/D/SUV'
+    },
+    {
+        id: '3dp',
+        name: '3D打印',
+        category: '先进制造',
+        cost: '高',
+        apply: ['仪表板', '副仪表板', '立柱'],
+        material: ['PA', 'TPU', '光敏树脂', '碳纤维'],
+        pattern: 'pattern-3dp',
+        subtitle: '3D Printing / Additive Manufacturing',
+        desc: '通过增材制造技术逐层构建零件，无需模具即可实现复杂几何形状和小批量定制化内饰件。',
+        pros: ['无模具', '高度自由', '快速迭代', '定制化'],
+        cons: ['效率低', '成本高', '表面粗糙', '材料有限'],
+        detail: '3D 打印正在改变内饰件的开发和生产方式。SLS（选择性激光烧结）和 FDM（熔融沉积成型）是内饰件开发中常用的技术。在样车试制阶段，3D 打印可以快速制造复杂形状的装饰件，无需开模，交期从 3 个月缩短到 1-2 周。在量产阶段，HP Multi Jet Fusion、Carbon DLS 等高速增材制造技术已开始用于小批量生产。材料和表面处理工艺的进步使得 3D 打印件的表面质量越来越接近注塑件。',
+        stiffness: '可调',
+        surface: '中等',
+        cycle: '1-24h',
+        tooling: '无模具',
+        carType: '样车/定制'
+    },
+    {
+        id: 'flock',
+        name: '静电植绒',
+        category: '表面处理',
+        cost: '低',
+        apply: ['立柱', '储物盒', '手套箱'],
+        material: ['尼龙', '粘胶', '涤纶'],
+        pattern: 'pattern-flock',
+        subtitle: 'Flocking',
+        desc: '利用静电将短纤维绒毛垂直植入涂有胶粘剂的零件表面，形成柔软、隔音的绒面效果。',
+        pros: ['触感柔软', '隔音好', '成本低', '防滑'],
+        cons: ['耐磨差', '易吸灰', '清洁困难'],
+        detail: '静电植绒是在零件表面植入绒毛的工艺，使硬质塑料获得织物般的柔软触感和隔音效果。绒毛长度 0.5-2mm，通过高压静电场（30-60kV）使绒毛垂直植入胶层。植绒零件具有良好的隔音减震效果，常用于手套箱、储物盒、眼镜盒内衬等。绒毛颜色可以选择，但深色系（黑、灰）最为常见。植绒面的耐磨性有限，频繁摩擦的区域可能出现脱落。',
+        stiffness: 'N/A',
+        surface: '绒面',
+        cycle: '1-3min',
+        tooling: '10-50万',
+        carType: 'A/B/C/D'
+    },
+    {
+        id: 'lit',
+        name: '镭雕透光',
+        category: '先进制造',
+        cost: '中',
+        apply: ['立柱', '门板', '副仪表板'],
+        material: ['PC', 'PMMA', '透明ABS'],
+        pattern: 'pattern-lit',
+        subtitle: 'Laser Etching + Light Guide',
+        desc: '在透明或半透明材料上通过镭雕加工出导光纹路，配合 LED 光源实现氛围灯效果或功能指示。',
+        pros: ['科技感强', '功能集成', '设计自由'],
+        cons: ['LED成本', '均匀性难控', '散热问题'],
+        detail: '镭雕透光工艺将装饰性与功能性完美结合。在透明基材（PC/PMMA）背面镭雕出精密导光纹路，配合 LED 光源，实现均匀发光的面板效果。广泛应用于：氛围灯饰条、触摸式空调面板、座椅调节开关面板、品牌 LOGO 迎宾灯等。导光纹路的设计需要光学仿真优化，确保亮度均匀性（通常要求 ≥85%）。RGB LED 和多色温 LED 可实现动态色彩变化。',
+        stiffness: '硬质',
+        surface: '良好',
+        cycle: '30-90s+LED',
+        tooling: '50-200万',
+        carType: 'B/C/D/SUV'
+    },
+    {
+        id: 'insert',
+        name: '模内注塑',
+        category: '成型',
+        cost: '中',
+        apply: ['仪表板', '门板', '立柱'],
+        material: ['PP', 'ABS', 'TPE', '金属嵌件'],
+        pattern: 'pattern-insert',
+        subtitle: 'Insert Molding',
+        desc: '在注塑成型前将金属或其他嵌件放入模具中，使嵌件与注塑材料一体成型，减少后续装配工序。',
+        pros: ['集成度高', '强度好', '减少装配'],
+        cons: ['模具复杂', '定位要求高', '周期长'],
+        detail: '模内注塑（Insert Molding）是将金属嵌件（螺母、螺纹套、卡扣座等）预先放入注塑模具中，注塑时嵌件与塑料材料一体成型。该工艺消除了嵌件的后续装配工序，提高了连接强度和位置精度。典型应用：仪表板骨架中的金属嵌件、门板卡扣座、立柱铰链加强件等。需要注意嵌件的定位设计（防止注塑偏位）和热膨胀系数匹配（防止应力开裂）。',
+        stiffness: '高',
+        surface: '中等',
+        cycle: '40-100s',
+        tooling: '100-400万',
+        carType: 'A/B/C/D/SUV'
+    }
+];
+
+// ===== Render =====
+function renderCard(p) {
+    const prosHtml = p.pros.map(t => `<span class="pro">✓ ${t}</span>`).join(' ');
+    const consHtml = p.cons.map(t => `<span class="con">✗ ${t}</span>`).join(' ');
+    const tags = [
+        `<span class="tag tag-category">${p.category}</span>`,
+        `<span class="tag tag-cost-${p.cost}">${p.cost === '低' ? '●' : p.cost === '中' ? '●●' : '●●●'} ${p.cost}成本</span>`,
+        ...p.apply.map(a => `<span class="tag tag-apply">${a}</span>`),
+        ...p.material.slice(0, 2).map(m => `<span class="tag tag-material">${m}</span>`)
+    ].join('');
+
+    return `
+        <div class="card ${p.pattern}" data-id="${p.id}" data-category="${p.category}" data-cost="${p.cost}" data-apply="${p.apply.join(',')}" data-material="${p.material.join(',')}">
+            <div class="card-preview">
+                <div class="pattern-bg"></div>
+                <div class="pattern-overlay"></div>
+                ${p.id === 'imd' ? '<div class="pattern-shine"></div>' : ''}
+                <div class="process-label">${p.name}</div>
+            </div>
+            <div class="card-body">
+                <h3>${p.name}</h3>
+                <div class="subtitle">${p.subtitle}</div>
+                <div class="tag-group">${tags}</div>
+                <div class="desc">${p.desc}</div>
+                <div class="card-meta">
+                    <div class="meta-item"><span class="meta-label">生产节拍</span><span class="meta-val">${p.cycle}</span></div>
+                    <div class="meta-item"><span class="meta-label">模具投资</span><span class="meta-val">${p.tooling}</span></div>
+                    <div class="meta-item"><span class="meta-label">表面质感</span><span class="meta-val">${p.surface}</span></div>
+                    <div class="meta-item"><span class="meta-label">适用车型</span><span class="meta-val">${p.carType}</span></div>
+                </div>
+                <div class="card-pros">${prosHtml} ${consHtml}</div>
+            </div>
+        </div>
+    `;
+}
+
+function renderModal(p) {
+    const prosHtml = p.pros.map(t => `<li>✓ ${t}</li>`).join('');
+    const consHtml = p.cons.map(t => `<li>✗ ${t}</li>`).join('');
+    return `
+        <h2>${p.name}</h2>
+        <div class="modal-sub">${p.subtitle} · ${p.category} · ${p.cost === '低' ? '●' : p.cost === '中' ? '●●' : '●●●'} ${p.cost}成本</div>
+
+        <div class="modal-section">
+            <h4>工艺概述</h4>
+            <p>${p.detail}</p>
+        </div>
+
+        <div class="modal-section">
+            <h4>技术参数</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:14px;">
+                <div style="display:flex;justify-content:space-between;padding:6px 12px;background:#f9fafb;border-radius:8px;"><span style="color:#888;">生产节拍</span><span style="font-weight:500;">${p.cycle}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:6px 12px;background:#f9fafb;border-radius:8px;"><span style="color:#888;">模具投资</span><span style="font-weight:500;">${p.tooling}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:6px 12px;background:#f9fafb;border-radius:8px;"><span style="color:#888;">表面质感</span><span style="font-weight:500;">${p.surface}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:6px 12px;background:#f9fafb;border-radius:8px;"><span style="color:#888;">适用车型</span><span style="font-weight:500;">${p.carType}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:6px 12px;background:#f9fafb;border-radius:8px;"><span style="color:#888;">刚性</span><span style="font-weight:500;">${p.stiffness}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:6px 12px;background:#f9fafb;border-radius:8px;"><span style="color:#888;">材料</span><span style="font-weight:500;">${p.material.join(' / ')}</span></div>
+            </div>
+        </div>
+
+        <div class="modal-section">
+            <h4>适用部位</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                ${p.apply.map(a => `<span style="padding:4px 14px;background:#e3f2fd;color:#1565c0;border-radius:14px;font-size:13px;">${a}</span>`).join('')}
+            </div>
+        </div>
+
+        <div class="modal-section">
+            <h4>优势与局限</h4>
+            <div class="modal-compare">
+                <div class="box pros">
+                    <strong style="font-size:14px;">✅ 优势</strong>
+                    <ul style="margin-top:6px;padding-left:18px;">${prosHtml}</ul>
+                </div>
+                <div class="box cons">
+                    <strong style="font-size:14px;">⚠️ 局限</strong>
+                    <ul style="margin-top:6px;padding-left:18px;">${consHtml}</ul>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ===== State =====
+let currentFilters = {
+    category: 'all',
+    apply: 'all',
+    cost: 'all',
+    search: ''
+};
+let currentView = 'grid';
+
+// ===== Init =====
+function init() {
+    const grid = document.getElementById('cardGrid');
+    grid.innerHTML = PROCESSES.map(renderCard).join('');
+    updateStats();
+
+    // Click card → modal
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', () => {
+            const id = card.dataset.id;
+            const p = PROCESSES.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('modalProcessLabel').textContent = p.name;
+            document.getElementById('modalPreview').className = `modal-preview ${p.pattern}`;
+            document.getElementById('modalBody').innerHTML = renderModal(p);
+            document.getElementById('modalOverlay').classList.add('open');
+        });
+    });
+
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const group = btn.dataset.group;
+            const value = btn.dataset.value;
+            // Remove active from same group
+            document.querySelectorAll(`.filter-btn[data-group="${group}"]`).forEach(b => {
+                b.classList.remove('active', 'active-all');
+            });
+            btn.classList.add(value === 'all' ? 'active-all' : 'active');
+            currentFilters[group] = value;
+            applyFilters();
+        });
+    });
+
+    // Search
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        currentFilters.search = e.target.value.trim().toLowerCase();
+        applyFilters();
+    });
+
+    // Reset
+    document.getElementById('resetFilters').addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('active', 'active-all');
+            if (b.dataset.value === 'all') b.classList.add('active-all');
+        });
+        currentFilters = { category: 'all', apply: 'all', cost: 'all', search: '' };
+        document.getElementById('searchInput').value = '';
+        applyFilters();
+    });
+
+    // View toggle
+    document.getElementById('viewGrid').addEventListener('click', () => {
+        currentView = 'grid';
+        document.getElementById('viewGrid').classList.add('active');
+        document.getElementById('viewList').classList.remove('active');
+        document.getElementById('cardGrid').classList.remove('list-view');
+    });
+    document.getElementById('viewList').addEventListener('click', () => {
+        currentView = 'list';
+        document.getElementById('viewList').classList.add('active');
+        document.getElementById('viewGrid').classList.remove('active');
+        document.getElementById('cardGrid').classList.add('list-view');
+    });
+
+    // Modal close
+    document.getElementById('modalClose').addEventListener('click', () => {
+        document.getElementById('modalOverlay').classList.remove('open');
+    });
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) document.getElementById('modalOverlay').classList.remove('open');
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') document.getElementById('modalOverlay').classList.remove('open');
+    });
+}
+
+function applyFilters() {
+    const { category, apply, cost, search } = currentFilters;
+    let showing = 0;
+
+    document.querySelectorAll('.card').forEach(card => {
+        const cat = card.dataset.category;
+        const co = card.dataset.cost;
+        const app = card.dataset.apply;
+        const mat = card.dataset.material;
+        const name = card.querySelector('h3').textContent.toLowerCase();
+        const desc = card.querySelector('.desc').textContent.toLowerCase();
+
+        let match = true;
+        if (category !== 'all' && cat !== category) match = false;
+        if (cost !== 'all' && co !== cost) match = false;
+        if (apply !== 'all' && !app.split(',').includes(apply)) match = false;
+        if (search) {
+            const inName = name.includes(search);
+            const inDesc = desc.includes(search);
+            const inMat = mat.toLowerCase().includes(search);
+            if (!inName && !inDesc && !inMat) match = false;
+        }
+
+        card.classList.toggle('hidden', !match);
+        if (match) showing++;
+    });
+
+    document.getElementById('statShowing').textContent = showing;
+    document.getElementById('emptyState').classList.toggle('show', showing === 0);
+}
+
+function updateStats() {
+    document.getElementById('statTotal').textContent = PROCESSES.length;
+    document.getElementById('statShowing').textContent = PROCESSES.length;
+    const cats = new Set(PROCESSES.map(p => p.category));
+    document.getElementById('statCategory').textContent = cats.size;
+}
+
+// ===== Go =====
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
